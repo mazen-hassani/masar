@@ -2,6 +2,7 @@ package com.salwita.taskmanagement.scheduling.service;
 
 import com.salwita.taskmanagement.domain.entity.Holiday;
 import com.salwita.taskmanagement.domain.repository.HolidayRepository;
+import com.salwita.taskmanagement.domain.service.WorkingTimeCalculator;
 import com.salwita.taskmanagement.domain.valueobject.WorkingCalendar;
 import com.salwita.taskmanagement.domain.valueobject.WorkingTimeRange;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class WorkingTimeCalculatorService {
+public class WorkingTimeCalculatorService implements WorkingTimeCalculator {
 
     private final HolidayRepository holidayRepository;
     

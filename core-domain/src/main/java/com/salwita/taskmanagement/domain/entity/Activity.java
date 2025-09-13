@@ -77,6 +77,19 @@ public class Activity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "actual_start_date")
+    private LocalDateTime actualStartDate;
+
+    @Column(name = "actual_end_date")
+    private LocalDateTime actualEndDate;
+
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "verified_by_user_id")
+    private User verifiedByUser;
+
     protected Activity() {
         // Default constructor for JPA
     }
@@ -247,6 +260,38 @@ public class Activity {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public LocalDateTime getActualStartDate() {
+        return actualStartDate;
+    }
+
+    public void setActualStartDate(LocalDateTime actualStartDate) {
+        this.actualStartDate = actualStartDate;
+    }
+
+    public LocalDateTime getActualEndDate() {
+        return actualEndDate;
+    }
+
+    public void setActualEndDate(LocalDateTime actualEndDate) {
+        this.actualEndDate = actualEndDate;
+    }
+
+    public LocalDateTime getVerifiedAt() {
+        return verifiedAt;
+    }
+
+    public void setVerifiedAt(LocalDateTime verifiedAt) {
+        this.verifiedAt = verifiedAt;
+    }
+
+    public User getVerifiedByUser() {
+        return verifiedByUser;
+    }
+
+    public void setVerifiedByUser(User verifiedByUser) {
+        this.verifiedByUser = verifiedByUser;
     }
 
     @Override
