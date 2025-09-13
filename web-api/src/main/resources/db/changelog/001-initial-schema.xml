@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="001-initial-schema" author="salwita-team">
+        
+        <!-- Organisations table -->
+        <createTable tableName="organisations">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="timezone" type="VARCHAR(50)" defaultValue="UTC">
+                <constraints nullable="false"/>
+            </column>
+            <column name="working_days" type="VARCHAR(255)" defaultValue="MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY">
+                <constraints nullable="false"/>
+            </column>
+            <column name="working_hours_per_day" type="INTEGER" defaultValue="8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="working_hours_start" type="VARCHAR(5)" defaultValue="09:00">
+                <constraints nullable="false"/>
+            </column>
+            <column name="working_hours_end" type="VARCHAR(5)" defaultValue="17:00">
+                <constraints nullable="false"/>
+            </column>
+            <column name="at_risk_threshold_percentage" type="INTEGER" defaultValue="10">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Users table -->
+        <createTable tableName="users">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="first_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password_hash" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="organisation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Projects table -->
+        <createTable tableName="projects">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="NOT_STARTED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tracking_status" type="VARCHAR(20)"/>
+            <column name="percentage_complete" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+            <column name="external_id" type="VARCHAR(255)"/>
+            <column name="mpp_uid" type="INTEGER"/>
+            <column name="source_system" type="VARCHAR(100)"/>
+            <column name="timezone" type="VARCHAR(50)"/>
+            <column name="working_days" type="VARCHAR(255)"/>
+            <column name="working_hours_per_day" type="INTEGER"/>
+            <column name="working_hours_start" type="VARCHAR(5)"/>
+            <column name="working_hours_end" type="VARCHAR(5)"/>
+            <column name="organisation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assigned_pm_user_id" type="BIGINT"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Project supported dependency types table -->
+        <createTable tableName="project_supported_dependency_types">
+            <column name="project_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dependency_type" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Activities table -->
+        <createTable tableName="activities">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="NOT_STARTED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tracking_status" type="VARCHAR(20)"/>
+            <column name="percentage_complete" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+            <column name="verification_checklist" type="JSONB"/>
+            <column name="external_id" type="VARCHAR(255)"/>
+            <column name="mpp_uid" type="INTEGER"/>
+            <column name="source_system" type="VARCHAR(100)"/>
+            <column name="project_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Tasks table -->
+        <createTable tableName="tasks">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="NOT_STARTED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tracking_status" type="VARCHAR(20)"/>
+            <column name="percentage_complete" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+            <column name="actual_start_date" type="TIMESTAMP"/>
+            <column name="actual_end_date" type="TIMESTAMP"/>
+            <column name="external_id" type="VARCHAR(255)"/>
+            <column name="mpp_uid" type="INTEGER"/>
+            <column name="source_system" type="VARCHAR(100)"/>
+            <column name="activity_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assignee_user_id" type="BIGINT"/>
+            <column name="verified_at" type="TIMESTAMP"/>
+            <column name="verified_by_user_id" type="BIGINT"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Dependencies table -->
+        <createTable tableName="dependencies">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="dependency_type" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lag_in_minutes" type="INTEGER" defaultValue="0"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="predecessor_activity_id" type="BIGINT"/>
+            <column name="successor_activity_id" type="BIGINT"/>
+            <column name="predecessor_task_id" type="BIGINT"/>
+            <column name="successor_task_id" type="BIGINT"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Project baselines table -->
+        <createTable tableName="project_baselines">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="version" type="INTEGER" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_current" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="project_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Baseline snapshots table -->
+        <createTable tableName="baseline_snapshots">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="item_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="item_description" type="TEXT"/>
+            <column name="item_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="original_item_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="baseline_status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="baseline_start_date" type="TIMESTAMP"/>
+            <column name="baseline_end_date" type="TIMESTAMP"/>
+            <column name="baseline_percentage_complete" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_id" type="VARCHAR(255)"/>
+            <column name="mpp_uid" type="INTEGER"/>
+            <column name="source_system" type="VARCHAR(100)"/>
+            <column name="baseline_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Foreign key constraints -->
+        <addForeignKeyConstraint
+            baseTableName="users"
+            baseColumnNames="organisation_id"
+            referencedTableName="organisations"
+            referencedColumnNames="id"
+            constraintName="fk_users_organisation"/>
+
+        <addForeignKeyConstraint
+            baseTableName="projects"
+            baseColumnNames="organisation_id"
+            referencedTableName="organisations"
+            referencedColumnNames="id"
+            constraintName="fk_projects_organisation"/>
+
+        <addForeignKeyConstraint
+            baseTableName="projects"
+            baseColumnNames="assigned_pm_user_id"
+            referencedTableName="users"
+            referencedColumnNames="id"
+            constraintName="fk_projects_assigned_pm_user"/>
+
+        <addForeignKeyConstraint
+            baseTableName="project_supported_dependency_types"
+            baseColumnNames="project_id"
+            referencedTableName="projects"
+            referencedColumnNames="id"
+            constraintName="fk_project_dependency_types_project"/>
+
+        <addForeignKeyConstraint
+            baseTableName="activities"
+            baseColumnNames="project_id"
+            referencedTableName="projects"
+            referencedColumnNames="id"
+            constraintName="fk_activities_project"/>
+
+        <addForeignKeyConstraint
+            baseTableName="tasks"
+            baseColumnNames="activity_id"
+            referencedTableName="activities"
+            referencedColumnNames="id"
+            constraintName="fk_tasks_activity"/>
+
+        <addForeignKeyConstraint
+            baseTableName="tasks"
+            baseColumnNames="assignee_user_id"
+            referencedTableName="users"
+            referencedColumnNames="id"
+            constraintName="fk_tasks_assignee_user"/>
+
+        <addForeignKeyConstraint
+            baseTableName="tasks"
+            baseColumnNames="verified_by_user_id"
+            referencedTableName="users"
+            referencedColumnNames="id"
+            constraintName="fk_tasks_verified_by_user"/>
+
+        <addForeignKeyConstraint
+            baseTableName="dependencies"
+            baseColumnNames="predecessor_activity_id"
+            referencedTableName="activities"
+            referencedColumnNames="id"
+            constraintName="fk_dependencies_predecessor_activity"/>
+
+        <addForeignKeyConstraint
+            baseTableName="dependencies"
+            baseColumnNames="successor_activity_id"
+            referencedTableName="activities"
+            referencedColumnNames="id"
+            constraintName="fk_dependencies_successor_activity"/>
+
+        <addForeignKeyConstraint
+            baseTableName="dependencies"
+            baseColumnNames="predecessor_task_id"
+            referencedTableName="tasks"
+            referencedColumnNames="id"
+            constraintName="fk_dependencies_predecessor_task"/>
+
+        <addForeignKeyConstraint
+            baseTableName="dependencies"
+            baseColumnNames="successor_task_id"
+            referencedTableName="tasks"
+            referencedColumnNames="id"
+            constraintName="fk_dependencies_successor_task"/>
+
+        <addForeignKeyConstraint
+            baseTableName="project_baselines"
+            baseColumnNames="project_id"
+            referencedTableName="projects"
+            referencedColumnNames="id"
+            constraintName="fk_project_baselines_project"/>
+
+        <addForeignKeyConstraint
+            baseTableName="project_baselines"
+            baseColumnNames="created_by_user_id"
+            referencedTableName="users"
+            referencedColumnNames="id"
+            constraintName="fk_project_baselines_created_by_user"/>
+
+        <addForeignKeyConstraint
+            baseTableName="baseline_snapshots"
+            baseColumnNames="baseline_id"
+            referencedTableName="project_baselines"
+            referencedColumnNames="id"
+            constraintName="fk_baseline_snapshots_baseline"/>
+
+        <!-- Indexes for performance -->
+        <createIndex tableName="users" indexName="idx_users_email">
+            <column name="email"/>
+        </createIndex>
+
+        <createIndex tableName="users" indexName="idx_users_organisation_id">
+            <column name="organisation_id"/>
+        </createIndex>
+
+        <createIndex tableName="projects" indexName="idx_projects_organisation_id">
+            <column name="organisation_id"/>
+        </createIndex>
+
+        <createIndex tableName="projects" indexName="idx_projects_assigned_pm_user_id">
+            <column name="assigned_pm_user_id"/>
+        </createIndex>
+
+        <createIndex tableName="activities" indexName="idx_activities_project_id">
+            <column name="project_id"/>
+        </createIndex>
+
+        <createIndex tableName="activities" indexName="idx_activities_status">
+            <column name="status"/>
+        </createIndex>
+
+        <createIndex tableName="tasks" indexName="idx_tasks_activity_id">
+            <column name="activity_id"/>
+        </createIndex>
+
+        <createIndex tableName="tasks" indexName="idx_tasks_assignee_user_id">
+            <column name="assignee_user_id"/>
+        </createIndex>
+
+        <createIndex tableName="tasks" indexName="idx_tasks_status">
+            <column name="status"/>
+        </createIndex>
+
+        <createIndex tableName="dependencies" indexName="idx_dependencies_predecessor_activity">
+            <column name="predecessor_activity_id"/>
+        </createIndex>
+
+        <createIndex tableName="dependencies" indexName="idx_dependencies_successor_activity">
+            <column name="successor_activity_id"/>
+        </createIndex>
+
+        <createIndex tableName="dependencies" indexName="idx_dependencies_predecessor_task">
+            <column name="predecessor_task_id"/>
+        </createIndex>
+
+        <createIndex tableName="dependencies" indexName="idx_dependencies_successor_task">
+            <column name="successor_task_id"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>
