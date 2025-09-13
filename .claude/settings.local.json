@@ -4,7 +4,8 @@
       "Bash(mvn clean:*)",
       "Bash(mvn test:*)",
       "Bash(git add:*)",
-      "Bash(mvn compile:*)"
+      "Bash(mvn compile:*)",
+      "Bash(mvn:*)"
     ],
     "deny": [],
     "ask": []

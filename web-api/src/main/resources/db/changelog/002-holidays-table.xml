@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="002-holidays-table" author="salwita-team">
+        
+        <!-- Holidays table -->
+        <createTable tableName="holidays">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date" type="DATE">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="is_recurring" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Index for performance -->
+        <createIndex tableName="holidays" indexName="idx_holidays_date">
+            <column name="date"/>
+        </createIndex>
+
+        <createIndex tableName="holidays" indexName="idx_holidays_is_recurring">
+            <column name="is_recurring"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>
