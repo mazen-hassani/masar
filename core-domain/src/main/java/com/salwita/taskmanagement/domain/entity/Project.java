@@ -70,6 +70,10 @@ public class Project {
     @JoinColumn(name = "assigned_pm_user_id")
     private User assignedPmUser;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "source_template_id")
+    private ProjectTemplate sourceTemplate;
+
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Activity> activities = new HashSet<>();
 
@@ -247,6 +251,14 @@ public class Project {
 
     public void setAssignedPmUser(User assignedPmUser) {
         this.assignedPmUser = assignedPmUser;
+    }
+
+    public ProjectTemplate getSourceTemplate() {
+        return sourceTemplate;
+    }
+
+    public void setSourceTemplate(ProjectTemplate sourceTemplate) {
+        this.sourceTemplate = sourceTemplate;
     }
 
     public Set<Activity> getActivities() {

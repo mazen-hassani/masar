@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="004-project-templates" author="salwita-team">
+        
+        <!-- Project Templates table -->
+        <createTable tableName="project_templates">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="version" type="INTEGER" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="timezone" type="VARCHAR(50)"/>
+            <column name="working_days" type="VARCHAR(255)"/>
+            <column name="working_hours_per_day" type="INTEGER"/>
+            <column name="working_hours_start" type="VARCHAR(5)"/>
+            <column name="working_hours_end" type="VARCHAR(5)"/>
+            <column name="external_id" type="VARCHAR(255)"/>
+            <column name="mpp_uid" type="INTEGER"/>
+            <column name="source_system" type="VARCHAR(100)"/>
+            <column name="organisation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Template supported dependency types table -->
+        <createTable tableName="template_supported_dependency_types">
+            <column name="template_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dependency_type" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Template Activities table -->
+        <createTable tableName="template_activities">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="display_order" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="estimated_duration_hours" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="verification_checklist" type="JSONB"/>
+            <column name="external_id" type="VARCHAR(255)"/>
+            <column name="mpp_uid" type="INTEGER"/>
+            <column name="source_system" type="VARCHAR(100)"/>
+            <column name="project_template_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Template Tasks table -->
+        <createTable tableName="template_tasks">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="display_order" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="estimated_duration_hours" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="required_assignee_role" type="VARCHAR(20)"/>
+            <column name="requires_specific_skills" type="TEXT"/>
+            <column name="external_id" type="VARCHAR(255)"/>
+            <column name="mpp_uid" type="INTEGER"/>
+            <column name="source_system" type="VARCHAR(100)"/>
+            <column name="template_activity_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Template Dependencies table -->
+        <createTable tableName="template_dependencies">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="dependency_type" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lag_in_minutes" type="INTEGER" defaultValue="0"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="predecessor_template_activity_id" type="BIGINT"/>
+            <column name="successor_template_activity_id" type="BIGINT"/>
+            <column name="predecessor_template_task_id" type="BIGINT"/>
+            <column name="successor_template_task_id" type="BIGINT"/>
+            <column name="project_template_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Add source_template_id to projects table -->
+        <addColumn tableName="projects">
+            <column name="source_template_id" type="BIGINT"/>
+        </addColumn>
+
+        <!-- Foreign key constraints -->
+        <addForeignKeyConstraint
+            baseTableName="project_templates"
+            baseColumnNames="organisation_id"
+            referencedTableName="organisations"
+            referencedColumnNames="id"
+            constraintName="fk_project_templates_organisation"/>
+
+        <addForeignKeyConstraint
+            baseTableName="project_templates"
+            baseColumnNames="created_by_user_id"
+            referencedTableName="users"
+            referencedColumnNames="id"
+            constraintName="fk_project_templates_created_by_user"/>
+
+        <addForeignKeyConstraint
+            baseTableName="template_supported_dependency_types"
+            baseColumnNames="template_id"
+            referencedTableName="project_templates"
+            referencedColumnNames="id"
+            constraintName="fk_template_dependency_types_template"/>
+
+        <addForeignKeyConstraint
+            baseTableName="template_activities"
+            baseColumnNames="project_template_id"
+            referencedTableName="project_templates"
+            referencedColumnNames="id"
+            constraintName="fk_template_activities_template"/>
+
+        <addForeignKeyConstraint
+            baseTableName="template_tasks"
+            baseColumnNames="template_activity_id"
+            referencedTableName="template_activities"
+            referencedColumnNames="id"
+            constraintName="fk_template_tasks_activity"/>
+
+        <addForeignKeyConstraint
+            baseTableName="template_dependencies"
+            baseColumnNames="predecessor_template_activity_id"
+            referencedTableName="template_activities"
+            referencedColumnNames="id"
+            constraintName="fk_template_deps_pred_activity"/>
+
+        <addForeignKeyConstraint
+            baseTableName="template_dependencies"
+            baseColumnNames="successor_template_activity_id"
+            referencedTableName="template_activities"
+            referencedColumnNames="id"
+            constraintName="fk_template_deps_succ_activity"/>
+
+        <addForeignKeyConstraint
+            baseTableName="template_dependencies"
+            baseColumnNames="predecessor_template_task_id"
+            referencedTableName="template_tasks"
+            referencedColumnNames="id"
+            constraintName="fk_template_deps_pred_task"/>
+
+        <addForeignKeyConstraint
+            baseTableName="template_dependencies"
+            baseColumnNames="successor_template_task_id"
+            referencedTableName="template_tasks"
+            referencedColumnNames="id"
+            constraintName="fk_template_deps_succ_task"/>
+
+        <addForeignKeyConstraint
+            baseTableName="template_dependencies"
+            baseColumnNames="project_template_id"
+            referencedTableName="project_templates"
+            referencedColumnNames="id"
+            constraintName="fk_template_dependencies_template"/>
+
+        <addForeignKeyConstraint
+            baseTableName="projects"
+            baseColumnNames="source_template_id"
+            referencedTableName="project_templates"
+            referencedColumnNames="id"
+            constraintName="fk_projects_source_template"/>
+
+        <!-- Indexes for performance -->
+        <createIndex tableName="project_templates" indexName="idx_project_templates_organisation_active">
+            <column name="organisation_id"/>
+            <column name="is_active"/>
+        </createIndex>
+
+        <createIndex tableName="project_templates" indexName="idx_project_templates_name_org">
+            <column name="name"/>
+            <column name="organisation_id"/>
+        </createIndex>
+
+        <createIndex tableName="template_activities" indexName="idx_template_activities_template_order">
+            <column name="project_template_id"/>
+            <column name="display_order"/>
+        </createIndex>
+
+        <createIndex tableName="template_tasks" indexName="idx_template_tasks_activity_order">
+            <column name="template_activity_id"/>
+            <column name="display_order"/>
+        </createIndex>
+
+        <createIndex tableName="template_dependencies" indexName="idx_template_deps_template">
+            <column name="project_template_id"/>
+        </createIndex>
+
+        <createIndex tableName="projects" indexName="idx_projects_source_template">
+            <column name="source_template_id"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>
