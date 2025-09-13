@@ -1,0 +1,13 @@
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:myVerySecretKeyThatIsAtLeast256BitsLongForHS512AlgorithmToWorkProperly}
+      expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
+      refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days in milliseconds
+      header: Authorization
+      prefix: "Bearer "
+
+logging:
+  level:
+    com.salwita.taskmanagement.security: DEBUG
+    org.springframework.security: DEBUG
