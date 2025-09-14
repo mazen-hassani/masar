@@ -52,4 +52,6 @@ public interface TemplateDependencyRepository extends JpaRepository<TemplateDepe
 
     @Query("SELECT COUNT(td) FROM TemplateDependency td WHERE td.projectTemplate = :template AND td.predecessorTemplateTask IS NOT NULL")
     long countTaskDependencies(@Param("template") ProjectTemplate template);
+    
+    List<TemplateDependency> findByProjectTemplateId(Long projectTemplateId);
 }

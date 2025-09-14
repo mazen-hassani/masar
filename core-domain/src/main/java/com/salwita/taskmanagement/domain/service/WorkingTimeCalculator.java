@@ -40,4 +40,9 @@ public interface WorkingTimeCalculator {
      * Count working days between two dates
      */
     long countWorkingDays(java.time.LocalDate startDate, java.time.LocalDate endDate, WorkingCalendar calendar);
+    
+    /**
+     * Subtract working time from a start date
+     */
+    LocalDateTime subtractWorkingTime(LocalDateTime startTime, Duration duration, WorkingCalendar calendar);
 }

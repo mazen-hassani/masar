@@ -175,6 +175,46 @@ public class WorkingTimeCalculatorService implements WorkingTimeCalculator {
                 .count();
     }
 
+    public LocalDateTime subtractWorkingTime(LocalDateTime startTime, Duration duration, WorkingCalendar calendar) {
+        if (duration.isNegative()) {
+            throw new IllegalArgumentException("Duration must be positive");
+        }
+        
+        ZoneId zoneId = calendar.getZoneId();
+        ZonedDateTime current = startTime.atZone(zoneId);
+        Duration remainingDuration = duration;
+        
+        Set<DayOfWeek> workingDays = parseWorkingDays(calendar.getWorkingDays());
+        WorkingTimeRange workingHours = parseWorkingHours(calendar.getWorkingHoursStart(), calendar.getWorkingHoursEnd());
+        
+        while (remainingDuration.toMinutes() > 0) {
+            LocalDate currentDate = current.toLocalDate();
+            Set<LocalDate> holidays = getHolidays(currentDate.minusDays(30), currentDate);
+            
+            if (isWorkingDay(currentDate, workingDays, holidays)) {
+                LocalDateTime dayStart = currentDate.atTime(workingHours.getStartTime());
+                LocalDateTime dayEnd = currentDate.atTime(workingHours.getEndTime());
+                
+                LocalDateTime effectiveEnd = current.toLocalDateTime().isBefore(dayEnd) ? 
+                    current.toLocalDateTime() : dayEnd;
+                
+                if (effectiveEnd.isAfter(dayStart)) {
+                    Duration availableTimeToday = Duration.between(dayStart, effectiveEnd);
+                    
+                    if (remainingDuration.compareTo(availableTimeToday) <= 0) {
+                        return effectiveEnd.minus(remainingDuration);
+                    } else {
+                        remainingDuration = remainingDuration.minus(availableTimeToday);
+                    }
+                }
+            }
+            
+            current = current.toLocalDate().minusDays(1).atTime(workingHours.getEndTime()).atZone(zoneId);
+        }
+        
+        return current.toLocalDateTime();
+    }
+
     @Cacheable(value = "holidays", key = "#startDate + '_' + #endDate")
     private Set<LocalDate> getHolidays(LocalDate startDate, LocalDate endDate) {
         List<Holiday> holidays = holidayRepository.findByDateBetween(startDate, endDate);

@@ -1,6 +1,9 @@
 package com.salwita.taskmanagement.domain.repository;
 
 import com.salwita.taskmanagement.domain.entity.Dependency;
+import com.salwita.taskmanagement.domain.entity.Project;
+import com.salwita.taskmanagement.domain.entity.Activity;
+import com.salwita.taskmanagement.domain.entity.Task;
 import com.salwita.taskmanagement.domain.enums.DependencyType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -182,4 +185,16 @@ public interface DependencyRepository extends JpaRepository<Dependency, Long> {
     @Query("SELECT t.id FROM Task t WHERE t.activity.project.id = :projectId AND " +
            "NOT EXISTS (SELECT 1 FROM Dependency d WHERE d.successorTask.id = t.id)")
     List<Long> findTasksWithNoPredecessors(@Param("projectId") Long projectId);
+
+    // Entity-based queries for service layer
+    List<Dependency> findBySuccessorActivity(Activity activity);
+    List<Dependency> findByPredecessorActivity(Activity activity);
+    List<Dependency> findBySuccessorTask(Task task);
+    List<Dependency> findByPredecessorTask(Task task);
+    
+    boolean existsByPredecessorActivityAndSuccessorActivity(Activity predecessorActivity, Activity successorActivity);
+    boolean existsByPredecessorTaskAndSuccessorTask(Task predecessorTask, Task successorTask);
+    
+    @Query("SELECT d FROM Dependency d WHERE d.predecessorActivity.project = :project OR d.predecessorTask.activity.project = :project")
+    List<Dependency> findByProject(@Param("project") Project project);
 }
