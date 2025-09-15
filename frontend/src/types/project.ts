@@ -9,7 +9,10 @@ export interface Project extends BaseEntity {
   priority: Priority;
   trackingStatus: TrackingStatus;
   organisation: { id: number; name: string };
-  projectManager: User;
+  projectManager?: User;
+  clientId?: number;
+  client?: User;
+  teamMembers?: User[];
   startDate?: string;
   endDate?: string;
   actualStartDate?: string;
@@ -69,6 +72,30 @@ export interface ExternalRefs {
   trelloId?: string;
   githubId?: string;
   customFields?: Record<string, any>;
+}
+
+export interface ProjectTemplate extends BaseEntity {
+  name: string;
+  description?: string;
+  category: string;
+  defaultPriority?: Priority;
+  estimatedDuration: number;
+  activities: TemplateActivity[];
+}
+
+export interface TemplateActivity {
+  id: number;
+  name: string;
+  description?: string;
+  estimatedDuration: number;
+  tasks: TemplateTask[];
+}
+
+export interface TemplateTask {
+  id: number;
+  name: string;
+  description?: string;
+  estimatedDuration: number;
 }
 
 // Request/Response DTOs

@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthRequest } from '../types';
 import { authService, setTokens, clearTokens, getAccessToken } from '../services';
+import { sessionManager } from '../utils/sessionManager';
+import { SessionWarningModal } from '../components/common/SessionWarningModal';
 
 interface AuthContextType {
   user: User | null;
@@ -8,6 +10,7 @@ interface AuthContextType {
   loading: boolean;
   login: (credentials: AuthRequest) => Promise<void>;
   logout: () => void;
+  setUser: (user: User) => void;
   updateUser: (userData: Partial<User>) => void;
 }
 
@@ -20,10 +23,11 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showSessionWarning, setShowSessionWarning] = useState(false);
 
   const isAuthenticated = !!user && !!getAccessToken();
 
-  // Initialize auth state on mount
+  // Initialize auth state and session management on mount
   useEffect(() => {
     const initializeAuth = async () => {
       const token = getAccessToken();
@@ -33,6 +37,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Verify token and get user info
           const userData = await authService.getCurrentUser();
           setUser(userData);
+          
+          // Initialize session management
+          sessionManager.setSessionCallbacks(
+            () => {
+              // Session expired
+              handleSessionExpired();
+            },
+            () => {
+              // Session warning
+              setShowSessionWarning(true);
+            }
+          );
+          
+          sessionManager.startSession();
+          const cleanupActivityTracking = sessionManager.setupActivityTracking();
+          
+          return cleanupActivityTracking;
         } catch (error) {
           console.error('Failed to initialize auth:', error);
           // Token is invalid, clear it
@@ -43,7 +64,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(false);
     };
 
-    initializeAuth();
+    const cleanup = initializeAuth();
+    
+    return () => {
+      cleanup?.then(fn => fn?.());
+      sessionManager.clearSession();
+    };
   }, []);
 
   const login = async (credentials: AuthRequest) => {
@@ -91,18 +117,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const handleSessionExpired = () => {
+    setShowSessionWarning(false);
+    setUser(null);
+    clearTokens();
+    sessionManager.clearSession();
+    window.location.href = '/login?reason=session_expired';
+  };
+
+  const handleExtendSession = () => {
+    setShowSessionWarning(false);
+    sessionManager.extendSession();
+  };
+
+  const handleLogoutFromWarning = () => {
+    setShowSessionWarning(false);
+    logout();
+  };
+
   const contextValue: AuthContextType = {
     user,
     isAuthenticated,
     loading,
     login,
     logout,
+    setUser,
     updateUser,
   };
 
   return (
     <AuthContext.Provider value={contextValue}>
       {children}
+      <SessionWarningModal
+        isOpen={showSessionWarning}
+        onExtendSession={handleExtendSession}
+        onLogout={handleLogoutFromWarning}
+      />
     </AuthContext.Provider>
   );
 };
@@ -114,3 +164,5 @@ export const useAuthContext = () => {
   }
   return context;
 };
+
+export const useAuth = useAuthContext;

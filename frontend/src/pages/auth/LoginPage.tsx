@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext';
 import { AuthRequest } from '../../types';
+import { loginRateLimiter } from '../../utils/security';
+import { FormField } from '../../components/forms/FormField';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, loading } = useAuth();
+  const [rateLimited, setRateLimited] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
   
   const from = location.state?.from?.pathname || '/dashboard';
+  const urlParams = new URLSearchParams(location.search);
+  const reason = urlParams.get('reason');
 
   const {
     register,

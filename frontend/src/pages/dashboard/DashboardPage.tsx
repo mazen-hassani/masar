@@ -1,5 +1,7 @@
 import React from 'react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext';
+import { RoleGuard } from '../../components/common/RoleGuard';
+import Layout from '../../components/layout/Layout';
 import { Role } from '../../types';
 
 export const DashboardPage: React.FC = () => {
@@ -68,17 +70,33 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Welcome back, {user?.firstName}!
-        </h1>
-        <p className="mt-2 text-gray-600">
-          Here's what's happening with your projects
-        </p>
+    <Layout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Welcome back, {user?.firstName}!
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Here's what's happening with your projects
+          </p>
+        </div>
+        
+        {getRoleBasedContent()}
+        
+        <RoleGuard allowedRoles={[Role.PMO]}>
+          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="text-lg font-medium text-blue-900">PMO Admin Panel</h3>
+            <p className="text-blue-700">Advanced administrative features available</p>
+          </div>
+        </RoleGuard>
+        
+        <RoleGuard allowedRoles={[Role.PMO, Role.PM]}>
+          <div className="mt-8 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <h3 className="text-lg font-medium text-green-900">Project Management Tools</h3>
+            <p className="text-green-700">Access to project creation and management features</p>
+          </div>
+        </RoleGuard>
       </div>
-      
-      {getRoleBasedContent()}
-    </div>
+    </Layout>
   );
 };

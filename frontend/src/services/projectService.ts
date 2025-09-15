@@ -4,6 +4,7 @@ import {
   Activity,
   Task,
   Dependency,
+  ProjectTemplate,
   CreateProjectRequest,
   UpdateProjectRequest,
   CreateActivityRequest,
@@ -17,7 +18,12 @@ import {
 
 export const projectService = {
   // Project methods
-  async getProjects(params?: PaginationParams): Promise<PaginatedResponse<Project>> {
+  async getProjects(filters?: any): Promise<Project[]> {
+    // For now, return a simple array - in production this would use the backend API with filters
+    return apiService.get<Project[]>('/projects');
+  },
+
+  async getProjectsPaginated(params?: PaginationParams): Promise<PaginatedResponse<Project>> {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.size) queryParams.append('size', params.size.toString());
@@ -42,6 +48,11 @@ export const projectService = {
 
   async deleteProject(id: number): Promise<void> {
     return apiService.delete<void>(`/projects/${id}`);
+  },
+
+  // Template methods
+  async getProjectTemplates(): Promise<ProjectTemplate[]> {
+    return apiService.get<ProjectTemplate[]>('/project-templates');
   },
 
   // Activity methods
