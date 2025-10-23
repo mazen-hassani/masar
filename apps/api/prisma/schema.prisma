@@ -1,5 +1,5 @@
 // ABOUTME: Prisma ORM schema definition for all database models
-// ABOUTME: Defines database structure, relationships, and constraints
+// ABOUTME: Defines database structure, relationships, and constraints for task management system
 
 datasource db {
   provider = "postgresql"
@@ -9,6 +9,7 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+
 
 // Enums
 enum Role {
@@ -67,6 +68,9 @@ model User {
   projectsOwned   Project[] @relation("projectOwner")
   projectsAssigned Project[] @relation("projectMembers")
   assignedTasks   Task[] @relation("taskAssignee")
+
+  auditLogs       AuditLog[]
+  refreshTokens   RefreshToken[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -225,4 +229,39 @@ model BaselineSnapshot {
   createdAt       DateTime @default(now())
 
   @@index([baselineId])
+}
+
+// Audit & Logging
+model AuditLog {
+  id              String   @id @default(cuid())
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  action          String   // "CREATE", "UPDATE", "DELETE", "LOGIN_FAILED", etc.
+  entityType      String   // "Project", "Activity", "Task", "Dependency", etc.
+  entityId        String?
+
+  changes         Json?    // {before: {...}, after: {...}}
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+model RefreshToken {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  token           String   @unique
+  expiresAt       DateTime
+
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }

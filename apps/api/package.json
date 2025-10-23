@@ -4,6 +4,9 @@
   "description": "Task Management Tool - Node.js API",
   "type": "module",
   "main": "dist/index.js",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -14,7 +17,9 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "type-check": "tsc --noEmit",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "tsx src/db/seed.ts"
+    "db:migrate:prod": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force"
   },
   "dependencies": {
     "@prisma/client": "^5.4.1",
