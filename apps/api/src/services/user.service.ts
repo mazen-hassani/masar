@@ -3,7 +3,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { BaseService, PaginationParams, PaginatedResponse } from "./base.service";
-import { User, Role } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 export class UserService extends BaseService {
   /**
@@ -13,9 +13,9 @@ export class UserService extends BaseService {
     email: string;
     name: string;
     passwordHash: string;
-    role?: Role;
+    role?: string;
     organisationId: string;
-  }): Promise<User> {
+  }): Promise<any> {
     try {
       return await prisma.user.create({
         data: {

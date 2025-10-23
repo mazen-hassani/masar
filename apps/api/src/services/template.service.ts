@@ -3,7 +3,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { BaseService, PaginationParams, PaginatedResponse } from "./base.service";
-import { DependencyType, Status } from "@prisma/client";
+import { DependencyType } from "@prisma/client";
 
 export interface TemplateActivity {
   id: string; // Unique within template
@@ -400,7 +400,7 @@ export class TemplateService extends BaseService {
       }
 
       // Convert project to template
-      const activities: TemplateActivity[] = project.activities.map((a, idx) => ({
+      const activities: TemplateActivity[] = project.activities.map((a: any, idx: number) => ({
         id: `activity-${idx}`,
         name: a.name,
         description: a.description || undefined,
@@ -410,8 +410,8 @@ export class TemplateService extends BaseService {
       }));
 
       const tasks: TemplateTask[] = [];
-      project.activities.forEach((a, aIdx) => {
-        a.tasks.forEach((t, tIdx) => {
+      project.activities.forEach((a: any, aIdx: number) => {
+        a.tasks.forEach((t: any, tIdx: number) => {
           tasks.push({
             id: `task-${aIdx}-${tIdx}`,
             activityId: `activity-${aIdx}`,
