@@ -95,20 +95,33 @@ export default function LoginPage() {
                 error={errors.email?.message}
               />
 
-              <Input
-                label="Password"
-                type="password"
-                placeholder="Enter your password"
-                required
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                })}
-                error={errors.password?.message}
-              />
+              <div className="flex items-end justify-between gap-2">
+                <div className="flex-1">
+                  <Input
+                    label="Password"
+                    type="password"
+                    placeholder="Enter your password"
+                    required
+                    {...register("password", {
+                      required: "Password is required",
+                      minLength: {
+                        value: 6,
+                        message: "Password must be at least 6 characters",
+                      },
+                    })}
+                    error={errors.password?.message}
+                  />
+                </div>
+              </div>
+
+              <div className="text-right">
+                <a
+                  href="/forgot-password"
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Forgot password?
+                </a>
+              </div>
 
               <Button
                 type="submit"

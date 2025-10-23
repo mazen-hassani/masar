@@ -1,14 +1,17 @@
 // ABOUTME: React Router configuration with public and protected routes
 // ABOUTME: Implements role-based access control and nested routing
 
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { Role } from "./types";
 
 // Page imports
 import LoginPage from "./pages/auth/LoginPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import DashboardPage from "./pages/projects/DashboardPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import LoadingPage from "./pages/LoadingPage";
 
@@ -75,23 +78,62 @@ const PublicRoute: React.FC = () => {
  * Provides consistent layout for authenticated pages
  */
 const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { logout, isLoading } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white shadow sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">Task Management</h1>
-            <nav className="space-x-4">
-              <a href="/dashboard" className="text-gray-600 hover:text-gray-900">
+            <nav className="flex items-center space-x-6">
+              <a href="/dashboard" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
                 Dashboard
               </a>
-              <a href="/projects" className="text-gray-600 hover:text-gray-900">
+              <a href="/projects" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
                 Projects
               </a>
-              <a href="/profile" className="text-gray-600 hover:text-gray-900">
+              <a href="/profile" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
                 Profile
               </a>
+              <div className="relative">
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="text-gray-600 hover:text-gray-900 text-sm font-medium flex items-center gap-1"
+                >
+                  ⚙️ Menu
+                </button>
+                {isMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
+                    <a
+                      href="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Account Settings
+                    </a>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      disabled={isLoading}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                    >
+                      {isLoading ? "Signing out..." : "Sign Out"}
+                    </button>
+                  </div>
+                )}
+              </div>
             </nav>
           </div>
         </div>
@@ -128,6 +170,14 @@ export const routes = [
       {
         path: "login",
         element: <LoginPage />,
+      },
+      {
+        path: "forgot-password",
+        element: <ForgotPasswordPage />,
+      },
+      {
+        path: "reset-password",
+        element: <ResetPasswordPage />,
       },
     ],
   },
@@ -185,7 +235,7 @@ export const routes = [
         path: "profile",
         element: (
           <LayoutWrapper>
-            <div>User Profile</div>
+            <ProfilePage />
           </LayoutWrapper>
         ),
       },
