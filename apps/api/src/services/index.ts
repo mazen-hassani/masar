@@ -22,3 +22,6 @@ export { JwtService, jwtService } from "./jwt.service";
 export type { JwtPayload, TokenPair } from "./jwt.service";
 export { AuthService, authService } from "./auth.service";
 export type { LoginCredentials, LoginResponse, RefreshResponse } from "./auth.service";
+
+export { CalendarService, calendarService } from "./calendar.service";
+export type { CalendarConfig, WorkingHours, WorkingTimeRange } from "./calendar.service";
