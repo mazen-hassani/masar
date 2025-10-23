@@ -39,3 +39,10 @@ export type {
 
 export { InstantiationService, instantiationService } from "./instantiation.service";
 export type { InstantiationOptions, InstantiationResult } from "./instantiation.service";
+
+export { SchedulerService, schedulerService } from "./scheduler.service";
+export type {
+  ScheduleItem,
+  ProjectSchedule,
+  SchedulingOptions,
+} from "./scheduler.service";
