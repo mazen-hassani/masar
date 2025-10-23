@@ -16,3 +16,9 @@ export { TaskService, taskService } from "./task.service";
 export type { TaskFilters } from "./task.service";
 
 export { DependencyService, dependencyService } from "./dependency.service";
+
+export { PasswordService, passwordService } from "./password.service";
+export { JwtService, jwtService } from "./jwt.service";
+export type { JwtPayload, TokenPair } from "./jwt.service";
+export { AuthService, authService } from "./auth.service";
+export type { LoginCredentials, LoginResponse, RefreshResponse } from "./auth.service";
