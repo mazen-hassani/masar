@@ -28,3 +28,14 @@ export type { CalendarConfig, WorkingHours, WorkingTimeRange } from "./calendar.
 
 export { StatusService, statusService } from "./status.service";
 export type { StatusTransition, TrackingStatusResult } from "./status.service";
+
+export { TemplateService, templateService } from "./template.service";
+export type {
+  ProjectTemplate,
+  TemplateActivity,
+  TemplateTask,
+  TemplateDependency,
+} from "./template.service";
+
+export { InstantiationService, instantiationService } from "./instantiation.service";
+export type { InstantiationOptions, InstantiationResult } from "./instantiation.service";
