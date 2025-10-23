@@ -14,6 +14,8 @@ import DashboardPage from "./pages/projects/DashboardPage";
 import ProjectsPage from "./pages/projects/ProjectsPage";
 import ProjectDetailPage from "./pages/projects/ProjectDetailPage";
 import ActivityDetailPage from "./pages/projects/ActivityDetailPage";
+import GanttPage from "./pages/projects/GanttPage";
+import KanbanPage from "./pages/projects/KanbanPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import LoadingPage from "./pages/LoadingPage";
@@ -228,11 +230,11 @@ export const routes = [
               },
               {
                 path: "gantt",
-                element: <div>Gantt Chart</div>,
+                element: <GanttPage />,
               },
               {
                 path: "kanban",
-                element: <div>Kanban Board</div>,
+                element: <KanbanPage />,
               },
               {
                 path: "settings",

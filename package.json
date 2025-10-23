@@ -18,5 +18,8 @@
   "devDependencies": {
     "turbo": "^1.10.16"
   },
-  "packageManager": "pnpm@8.0.0"
+  "packageManager": "pnpm@8.0.0",
+  "dependencies": {
+    "recharts": "^3.3.0"
+  }
 }
