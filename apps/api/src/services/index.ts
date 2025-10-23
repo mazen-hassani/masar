@@ -46,3 +46,11 @@ export type {
   ProjectSchedule,
   SchedulingOptions,
 } from "./scheduler.service";
+
+export { ConstraintService, constraintService } from "./constraint.service";
+export type {
+  DateConstraint,
+  DateEditValidation,
+  DateConstraintViolation,
+  ValidDateRange,
+} from "./constraint.service";

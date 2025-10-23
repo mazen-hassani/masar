@@ -40,6 +40,17 @@ enum DependencyType {
   SF // Start-to-Finish
 }
 
+enum ConstraintType {
+  ASAP // As soon as possible
+  ALAP // As late as possible
+  MUST_START_ON // Fixed start date
+  MUST_FINISH_ON // Fixed end date
+  START_NO_EARLIER // Earliest start date
+  START_NO_LATER // Latest start date
+  FINISH_NO_EARLIER // Earliest end date
+  FINISH_NO_LATER // Latest end date
+}
+
 // Organization & User Models
 model Organisation {
   id        String   @id @default(cuid())
@@ -200,6 +211,24 @@ model Dependency {
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+model DateConstraint {
+  id              String   @id @default(cuid())
+
+  // Item being constrained
+  itemId          String
+  itemType        String   // "activity" or "task"
+
+  // Constraint details
+  constraintType  ConstraintType
+  constraintDate  DateTime
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([itemId])
+  @@index([itemType])
 }
 
 model ProjectBaseline {
