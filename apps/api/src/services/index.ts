@@ -25,3 +25,6 @@ export type { LoginCredentials, LoginResponse, RefreshResponse } from "./auth.se
 
 export { CalendarService, calendarService } from "./calendar.service";
 export type { CalendarConfig, WorkingHours, WorkingTimeRange } from "./calendar.service";
+
+export { StatusService, statusService } from "./status.service";
+export type { StatusTransition, TrackingStatusResult } from "./status.service";
