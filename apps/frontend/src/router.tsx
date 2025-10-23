@@ -11,6 +11,9 @@ import LoginPage from "./pages/auth/LoginPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import DashboardPage from "./pages/projects/DashboardPage";
+import ProjectsPage from "./pages/projects/ProjectsPage";
+import ProjectDetailPage from "./pages/projects/ProjectDetailPage";
+import ActivityDetailPage from "./pages/projects/ActivityDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import LoadingPage from "./pages/LoadingPage";
@@ -205,15 +208,23 @@ export const routes = [
         children: [
           {
             index: true,
-            element: <div>Projects List</div>,
+            element: <ProjectsPage />,
           },
           {
             path: ":projectId",
             element: <Outlet />,
             children: [
               {
+                index: true,
+                element: <ProjectDetailPage />,
+              },
+              {
                 path: "dashboard",
                 element: <div>Project Dashboard</div>,
+              },
+              {
+                path: "activities/:activityId",
+                element: <ActivityDetailPage />,
               },
               {
                 path: "gantt",
