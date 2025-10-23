@@ -1,0 +1,22 @@
+{
+  "name": "masar",
+  "version": "0.1.0",
+  "description": "Task Management Tool - Full Vercel Deployment",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "type-check": "turbo run type-check"
+  },
+  "devDependencies": {
+    "turbo": "^1.10.16"
+  },
+  "packageManager": "pnpm@8.0.0"
+}

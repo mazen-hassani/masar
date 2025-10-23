@@ -1,0 +1,228 @@
+// ABOUTME: Prisma ORM schema definition for all database models
+// ABOUTME: Defines database structure, relationships, and constraints
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Enums
+enum Role {
+  PMO
+  PM
+  TEAM_MEMBER
+  CLIENT
+}
+
+enum Status {
+  NOT_STARTED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  VERIFIED
+}
+
+enum TrackingStatus {
+  ON_TRACK
+  AT_RISK
+  OFF_TRACK
+}
+
+enum DependencyType {
+  FS // Finish-to-Start
+  SS // Start-to-Start
+  FF // Finish-to-Finish
+  SF // Start-to-Finish
+}
+
+// Organization & User Models
+model Organisation {
+  id        String   @id @default(cuid())
+  name      String
+  timezone  String   @default("UTC")
+  workingDaysOfWeek String @default("MTWTF") // M-F by default
+  workingHours Json   // [{start: "09:00", end: "13:00"}, {start: "14:00", end: "18:00"}]
+
+  users     User[]
+  projects  Project[]
+  holidays  Holiday[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String
+  passwordHash    String
+  role            Role     @default(TEAM_MEMBER)
+  organisationId  String
+  organisation    Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  projectsOwned   Project[] @relation("projectOwner")
+  projectsAssigned Project[] @relation("projectMembers")
+  assignedTasks   Task[] @relation("taskAssignee")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organisationId])
+  @@index([email])
+}
+
+model Holiday {
+  id              String   @id @default(cuid())
+  date            DateTime
+  description     String
+  organisationId  String
+  organisation    Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organisationId])
+  @@index([date])
+}
+
+// Project Models
+model Project {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  organisationId  String
+  organisation    Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  ownerUserId     String
+  owner           User     @relation("projectOwner", fields: [ownerUserId], references: [id])
+
+  members         User[]   @relation("projectMembers")
+
+  startDate       DateTime
+  timezone        String   @default("UTC") // Project-specific timezone override
+
+  status          Status   @default(NOT_STARTED)
+  progressPercentage Float @default(0)
+
+  activities      Activity[]
+  baselines       ProjectBaseline[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organisationId])
+  @@index([ownerUserId])
+}
+
+model Activity {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name            String
+  description     String?
+
+  startDate       DateTime
+  endDate         DateTime
+
+  status          Status   @default(NOT_STARTED)
+  trackingStatus  TrackingStatus @default(ON_TRACK)
+  progressPercentage Float @default(0)
+
+  verificationChecklist Json? // [{item: string, completed: boolean, completedBy: string, completedAt: DateTime}]
+
+  tasks           Task[]
+  predecessorDeps Dependency[] @relation("activityPredecessor")
+  successorDeps   Dependency[] @relation("activitySuccessor")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+model Task {
+  id              String   @id @default(cuid())
+  activityId      String
+  activity        Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  name            String
+  description     String?
+
+  startDate       DateTime
+  endDate         DateTime
+  duration        Int      // in working hours
+
+  assigneeUserId  String?
+  assignee        User?    @relation("taskAssignee", fields: [assigneeUserId], references: [id])
+
+  status          Status   @default(NOT_STARTED)
+  trackingStatus  TrackingStatus @default(ON_TRACK)
+  progressPercentage Float @default(0)
+
+  predecessorDeps Dependency[] @relation("taskPredecessor")
+  successorDeps   Dependency[] @relation("taskSuccessor")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([activityId])
+  @@index([assigneeUserId])
+}
+
+model Dependency {
+  id              String   @id @default(cuid())
+
+  // Activity dependencies
+  activityPredecessorId String?
+  activityPredecessor   Activity? @relation("activityPredecessor", fields: [activityPredecessorId], references: [id], onDelete: Cascade)
+
+  activitySuccessorId String?
+  activitySuccessor     Activity? @relation("activitySuccessor", fields: [activitySuccessorId], references: [id], onDelete: Cascade)
+
+  // Task dependencies
+  taskPredecessorId String?
+  taskPredecessor   Task? @relation("taskPredecessor", fields: [taskPredecessorId], references: [id], onDelete: Cascade)
+
+  taskSuccessorId String?
+  taskSuccessor     Task? @relation("taskSuccessor", fields: [taskSuccessorId], references: [id], onDelete: Cascade)
+
+  dependencyType  DependencyType
+  lag             Int     @default(0) // in working hours
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ProjectBaseline {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name            String   // e.g. "Planned v1", "Revised v2"
+  baselineDate    DateTime @default(now())
+
+  snapshots       BaselineSnapshot[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+model BaselineSnapshot {
+  id              String   @id @default(cuid())
+  baselineId      String
+  baseline        ProjectBaseline @relation(fields: [baselineId], references: [id], onDelete: Cascade)
+
+  // Snapshot of activity/task dates and status at baseline creation
+  data            Json     // {activityId: {startDate, endDate, status}, ...}
+
+  createdAt       DateTime @default(now())
+
+  @@index([baselineId])
+}
