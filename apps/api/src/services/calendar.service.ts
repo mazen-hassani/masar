@@ -2,20 +2,15 @@
 // ABOUTME: Handles working hours, holidays, weekends, and timezone conversions
 
 import {
-  isWeekend,
   addDays,
-  addHours,
   addMinutes,
   isBefore,
   isAfter,
   isEqual,
   format,
-  parse,
-  startOfDay,
-  endOfDay,
   eachDayOfInterval,
 } from "date-fns";
-import { toZonedTime, formatInTimeZone } from "date-fns-tz";
+import { utcToZonedTime, formatInTimeZone } from "date-fns-tz";
 import { prisma } from "@/lib/prisma";
 import { BaseService } from "./base.service";
 
@@ -385,7 +380,7 @@ export class CalendarService extends BaseService {
    * Convert datetime to organisation's timezone
    */
   convertToTimezone(date: Date, timezone: string): Date {
-    return toZonedTime(date, timezone);
+    return utcToZonedTime(date, timezone);
   }
 
   /**
