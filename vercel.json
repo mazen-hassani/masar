@@ -1,9 +1,5 @@
 {
   "version": 2,
-  "projectSettings": {
-    "framework": "vite",
-    "nodeVersion": "18.x"
-  },
   "buildCommand": "npm run build",
   "outputDirectory": "apps/frontend/dist",
   "installCommand": "npm install",
