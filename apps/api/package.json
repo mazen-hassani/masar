@@ -8,6 +8,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "scripts": {
+    "postinstall": "npx prisma generate",
     "dev": "tsx watch src/index.ts",
     "build": "echo 'Build skipped - using tsx to run TypeScript directly'",
     "start": "tsx src/index.ts",
