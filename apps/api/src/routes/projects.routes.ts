@@ -196,11 +196,49 @@ router.get("/:projectId/activities", authMiddleware, async (req: Request, res: R
     const take = req.query.take ? parseInt(req.query.take as string) : 50;
 
     const result = await activitiesService.listActivitiesByProject(req.params.projectId, skip, take);
-    res.json(result);
+    // Return just the activities array (not paginated response)
+    res.json(result.activities);
   } catch (error) {
     if (error instanceof Error && error.message === "Project not found") {
       return res.status(404).json({ error: "Project not found" });
     }
+    next(error);
+  }
+});
+
+/**
+ * POST /api/projects/:projectId/activities
+ * Create a new activity in a project
+ */
+router.post("/:projectId/activities", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Verify project access
+    await projectsService.getProjectById(req.params.projectId, req.user!.id);
+
+    const CreateActivitySchema = z.object({
+      name: z.string().min(1, "Activity name is required"),
+      description: z.string().optional(),
+      startDate: z.string().datetime().optional(),
+      endDate: z.string().datetime().optional(),
+    });
+
+    const validation = CreateActivitySchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({
+        error: "Validation failed",
+        details: validation.error.errors,
+      });
+    }
+
+    const activity = await activitiesService.createActivity({
+      projectId: req.params.projectId,
+      ...validation.data,
+      startDate: validation.data.startDate ? new Date(validation.data.startDate) : new Date(),
+      endDate: validation.data.endDate ? new Date(validation.data.endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Default 7 days from now
+    });
+
+    res.status(201).json(activity);
+  } catch (error) {
     next(error);
   }
 });
@@ -218,7 +256,8 @@ router.get("/:projectId/activities/:activityId/tasks", authMiddleware, async (re
     const take = req.query.take ? parseInt(req.query.take as string) : 50;
 
     const result = await tasksService.listTasksByActivity(req.params.activityId, skip, take);
-    res.json(result);
+    // Return just the tasks array (not paginated response)
+    res.json(result.tasks);
   } catch (error) {
     if (error instanceof Error && error.message === "Activity not found") {
       return res.status(404).json({ error: "Activity not found" });
