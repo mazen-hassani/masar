@@ -1,9 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "npm exec turbo -- run build --filter=@masar/frontend",
-  "outputDirectory": "apps/frontend/dist",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "installCommand": "npm install",
-  "regions": ["iad1"],
   "rewrites": [
     {
       "source": "/(.*)",
