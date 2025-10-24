@@ -4,6 +4,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { authMiddleware, requireRole } from "../middleware/auth.middleware";
 import { projectsService } from "../services/projects.service";
+import { activitiesService } from "../services/activities.service";
 import { z } from "zod";
 
 const router = Router();
@@ -176,6 +177,28 @@ router.get("/:id/stats", authMiddleware, async (req: Request, res: Response, nex
     }
     if (error instanceof Error && error.message === "Unauthorized access to project") {
       return res.status(403).json({ error: "Unauthorized access to project" });
+    }
+    next(error);
+  }
+});
+
+/**
+ * GET /api/projects/:projectId/activities
+ * Get all activities in a project
+ */
+router.get("/:projectId/activities", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Verify project access
+    await projectsService.getProjectById(req.params.projectId, req.user!.id);
+
+    const skip = req.query.skip ? parseInt(req.query.skip as string) : 0;
+    const take = req.query.take ? parseInt(req.query.take as string) : 50;
+
+    const result = await activitiesService.listActivitiesByProject(req.params.projectId, skip, take);
+    res.json(result);
+  } catch (error) {
+    if (error instanceof Error && error.message === "Project not found") {
+      return res.status(404).json({ error: "Project not found" });
     }
     next(error);
   }
