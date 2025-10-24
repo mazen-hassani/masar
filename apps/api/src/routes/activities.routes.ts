@@ -57,24 +57,9 @@ router.post("/", authMiddleware, async (req: Request, res: Response, next: NextF
 });
 
 /**
- * GET /api/activities/:id
- * Get activity details
- */
-router.get("/:id", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const activity = await activitiesService.getActivityById(req.params.id);
-    res.json(activity);
-  } catch (error) {
-    if (error instanceof Error && error.message === "Activity not found") {
-      return res.status(404).json({ error: "Activity not found" });
-    }
-    next(error);
-  }
-});
-
-/**
  * GET /api/activities/project/:projectId
  * List activities by project
+ * MUST come before /:id route to avoid conflict
  */
 router.get("/project/:projectId", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -86,6 +71,22 @@ router.get("/project/:projectId", authMiddleware, async (req: Request, res: Resp
   } catch (error) {
     if (error instanceof Error && error.message === "Project not found") {
       return res.status(404).json({ error: "Project not found" });
+    }
+    next(error);
+  }
+});
+
+/**
+ * GET /api/activities/:id
+ * Get activity details
+ */
+router.get("/:id", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const activity = await activitiesService.getActivityById(req.params.id);
+    res.json(activity);
+  } catch (error) {
+    if (error instanceof Error && error.message === "Activity not found") {
+      return res.status(404).json({ error: "Activity not found" });
     }
     next(error);
   }

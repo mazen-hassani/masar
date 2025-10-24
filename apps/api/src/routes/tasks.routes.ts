@@ -61,24 +61,9 @@ router.post("/", authMiddleware, async (req: Request, res: Response, next: NextF
 });
 
 /**
- * GET /api/tasks/:id
- * Get task details
- */
-router.get("/:id", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const task = await tasksService.getTaskById(req.params.id);
-    res.json(task);
-  } catch (error) {
-    if (error instanceof Error && error.message === "Task not found") {
-      return res.status(404).json({ error: "Task not found" });
-    }
-    next(error);
-  }
-});
-
-/**
  * GET /api/tasks/activity/:activityId
  * List tasks by activity
+ * MUST come before /:id route to avoid conflict
  */
 router.get("/activity/:activityId", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -98,6 +83,7 @@ router.get("/activity/:activityId", authMiddleware, async (req: Request, res: Re
 /**
  * GET /api/tasks/assignee/:userId
  * List tasks assigned to user
+ * MUST come before /:id route to avoid conflict
  */
 router.get("/assignee/:userId", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -107,6 +93,36 @@ router.get("/assignee/:userId", authMiddleware, async (req: Request, res: Respon
     const result = await tasksService.listTasksByAssignee(req.params.userId, skip, take);
     res.json(result);
   } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /api/tasks/project/:projectId/overdue
+ * Get overdue tasks for a project
+ * MUST come before /:id route to avoid conflict
+ */
+router.get("/project/:projectId/overdue", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const tasks = await tasksService.getOverdueTasks(req.params.projectId);
+    res.json({ tasks });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /api/tasks/:id
+ * Get task details
+ */
+router.get("/:id", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const task = await tasksService.getTaskById(req.params.id);
+    res.json(task);
+  } catch (error) {
+    if (error instanceof Error && error.message === "Task not found") {
+      return res.status(404).json({ error: "Task not found" });
+    }
     next(error);
   }
 });
@@ -181,19 +197,6 @@ router.delete("/:id", authMiddleware, async (req: Request, res: Response, next: 
     if (error instanceof Error && error.message === "Task not found") {
       return res.status(404).json({ error: "Task not found" });
     }
-    next(error);
-  }
-});
-
-/**
- * GET /api/tasks/project/:projectId/overdue
- * Get overdue tasks for a project
- */
-router.get("/project/:projectId/overdue", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const tasks = await tasksService.getOverdueTasks(req.params.projectId);
-    res.json({ tasks });
-  } catch (error) {
     next(error);
   }
 });
