@@ -61,9 +61,13 @@ router.post("/", authMiddleware, async (req: Request, res: Response, next: NextF
  */
 router.get("/", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const skip = req.query.skip ? parseInt(req.query.skip as string) : 0;
-    const take = req.query.take ? parseInt(req.query.take as string) : 50;
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const pageSize = req.query.limit ? parseInt(req.query.limit as string) : 10;
     const status = req.query.status as string | undefined;
+
+    // Convert page/pageSize to skip/take
+    const skip = (page - 1) * pageSize;
+    const take = pageSize;
 
     const result = await projectsService.listProjects({
       organisationId: req.user!.organisationId,
@@ -73,7 +77,16 @@ router.get("/", authMiddleware, async (req: Request, res: Response, next: NextFu
       take: Math.min(take, 100), // Cap at 100
     });
 
-    res.json(result);
+    // Transform to PaginatedResponse format
+    const totalPages = Math.ceil(result.pagination.total / pageSize);
+
+    res.json({
+      data: result.projects,
+      total: result.pagination.total,
+      page,
+      pageSize,
+      totalPages,
+    });
   } catch (error) {
     next(error);
   }
