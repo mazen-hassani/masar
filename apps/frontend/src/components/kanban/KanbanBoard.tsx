@@ -30,19 +30,27 @@ const statusLabels: Record<Status, string> = {
 };
 
 const statusColors: Record<Status, string> = {
-  [Status.NOT_STARTED]: "bg-gray-100 border-gray-300",
-  [Status.IN_PROGRESS]: "bg-blue-50 border-blue-300",
-  [Status.ON_HOLD]: "bg-yellow-50 border-yellow-300",
-  [Status.COMPLETED]: "bg-green-50 border-green-300",
-  [Status.VERIFIED]: "bg-purple-50 border-purple-300",
+  [Status.NOT_STARTED]: "bg-white border-gray-200 hover:border-gray-300 hover:shadow-md",
+  [Status.IN_PROGRESS]: "bg-white border-blue-200 hover:border-blue-300 hover:shadow-md hover:shadow-blue-100",
+  [Status.ON_HOLD]: "bg-white border-yellow-200 hover:border-yellow-300 hover:shadow-md hover:shadow-yellow-100",
+  [Status.COMPLETED]: "bg-white border-green-200 hover:border-green-300 hover:shadow-md hover:shadow-green-100",
+  [Status.VERIFIED]: "bg-white border-purple-200 hover:border-purple-300 hover:shadow-md hover:shadow-purple-100",
 };
 
 const statusHeaderBg: Record<Status, string> = {
-  [Status.NOT_STARTED]: "bg-gray-500",
-  [Status.IN_PROGRESS]: "bg-blue-500",
-  [Status.ON_HOLD]: "bg-yellow-500",
-  [Status.COMPLETED]: "bg-green-500",
-  [Status.VERIFIED]: "bg-purple-500",
+  [Status.NOT_STARTED]: "bg-gradient-to-r from-gray-500 to-gray-600",
+  [Status.IN_PROGRESS]: "bg-gradient-to-r from-blue-500 to-blue-600",
+  [Status.ON_HOLD]: "bg-gradient-to-r from-yellow-500 to-yellow-600",
+  [Status.COMPLETED]: "bg-gradient-to-r from-green-500 to-green-600",
+  [Status.VERIFIED]: "bg-gradient-to-r from-purple-500 to-purple-600",
+};
+
+const statusIcons: Record<Status, string> = {
+  [Status.NOT_STARTED]: "📋",
+  [Status.IN_PROGRESS]: "⚡",
+  [Status.ON_HOLD]: "⏸",
+  [Status.COMPLETED]: "✓",
+  [Status.VERIFIED]: "✓✓",
 };
 
 const priorityColors = {
@@ -86,19 +94,22 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   );
 
   return (
-    <div className="flex gap-6 overflow-x-auto pb-6">
+    <div className="flex gap-6 overflow-x-auto pb-6 min-h-[650px]">
       {statuses.map((status) => (
         <div
           key={status}
-          className="flex flex-col min-w-[350px] bg-gray-50 rounded-lg overflow-hidden"
+          className="flex flex-col min-w-[360px] bg-gray-50 rounded-xl overflow-hidden border border-gray-200"
         >
           {/* Column Header */}
-          <div className={`${statusHeaderBg[status]} text-white p-4`}>
+          <div className={`${statusHeaderBg[status]} text-white p-4 shadow-md`}>
             <div className="flex justify-between items-center">
-              <h2 className="font-semibold text-lg">
-                {statusLabels[status]}
-              </h2>
-              <span className="bg-white text-gray-900 px-3 py-1 rounded-full text-sm font-medium">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{statusIcons[status]}</span>
+                <h2 className="font-bold text-base">
+                  {statusLabels[status]}
+                </h2>
+              </div>
+              <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-semibold backdrop-blur-sm">
                 {cardsByStatus[status].length}
               </span>
             </div>
@@ -106,15 +117,17 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
           {/* Cards Container */}
           <div
-            className={`flex-1 p-4 space-y-3 overflow-y-auto min-h-[600px] transition-colors ${
-              draggedCard ? "bg-gray-100" : "bg-gray-50"
+            className={`flex-1 p-4 space-y-3 overflow-y-auto transition-all duration-200 ${
+              draggedCard ? "bg-blue-50" : "bg-white"
             }`}
             onDragOver={handleDragOver}
             onDrop={() => handleDrop(status)}
           >
             {cardsByStatus[status].length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
-                <p className="text-sm">No tasks</p>
+              <div className="text-center py-12 text-gray-400">
+                <p className="text-lg mb-2">📭</p>
+                <p className="text-sm font-medium">No tasks yet</p>
+                <p className="text-xs mt-1">Drag tasks here or create new ones</p>
               </div>
             ) : (
               cardsByStatus[status].map((card) => (
@@ -127,26 +140,29 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                     setDragSource(null);
                   }}
                   onClick={() => onCardClick?.(card)}
-                  className={`p-4 rounded-lg border-2 cursor-move hover:shadow-md transition-all ${
+                  className={`p-4 rounded-lg border-2 cursor-grab active:cursor-grabbing transition-all duration-200 ${
                     statusColors[status]
-                  } ${draggedCard?.id === card.id ? "opacity-50" : ""}`}
+                  } ${draggedCard?.id === card.id ? "opacity-50 scale-95" : "scale-100"}`}
                 >
-                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                  {/* Card Title */}
+                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm">
                     {card.title}
                   </h3>
 
+                  {/* Card Description */}
                   {card.description && (
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                    <p className="text-xs text-gray-600 mb-3 line-clamp-2">
                       {card.description}
                     </p>
                   )}
 
-                  <div className="space-y-2">
+                  {/* Card Metadata */}
+                  <div className="space-y-2 border-t border-gray-100 pt-3">
                     {/* Priority Badge */}
                     {card.priority && (
                       <div className="flex gap-2">
                         <span
-                          className={`text-xs px-2 py-1 rounded ${
+                          className={`text-xs px-2 py-1 rounded-full font-semibold ${
                             priorityColors[card.priority]
                           }`}
                         >
@@ -157,22 +173,20 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
                     {/* Due Date */}
                     {card.dueDate && (
-                      <div className="text-xs text-gray-600">
-                        Due:{" "}
-                        {new Date(card.dueDate).toLocaleDateString(
-                          undefined,
-                          {
-                            month: "short",
-                            day: "numeric",
-                          }
-                        )}
+                      <div className="text-xs text-gray-600 flex items-center gap-1">
+                        <span>📅</span>
+                        {new Date(card.dueDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </div>
                     )}
 
                     {/* Assignee */}
                     {card.assignee && (
-                      <div className="text-xs text-gray-600">
-                        Assigned to: {card.assignee}
+                      <div className="text-xs text-gray-600 flex items-center gap-1">
+                        <span>👤</span>
+                        {card.assignee}
                       </div>
                     )}
                   </div>
