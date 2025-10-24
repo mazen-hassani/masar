@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
+  "buildCommand": "turbo run build --filter=@masar/frontend",
+  "outputDirectory": "apps/frontend/dist",
+  "installCommand": "pnpm install",
   "regions": ["iad1"],
   "rewrites": [
     {
