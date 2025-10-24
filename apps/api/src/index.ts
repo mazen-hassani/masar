@@ -7,6 +7,9 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { prisma } from "./lib/prisma";
 import authRoutes from "./routes/auth.routes";
+import projectsRoutes from "./routes/projects.routes";
+import activitiesRoutes from "./routes/activities.routes";
+import tasksRoutes from "./routes/tasks.routes";
 
 dotenv.config();
 
@@ -46,6 +49,15 @@ app.get("/api", (req, res) => {
 
 // Authentication routes
 app.use("/api/auth", authRoutes);
+
+// Projects routes
+app.use("/api/projects", projectsRoutes);
+
+// Activities routes
+app.use("/api/activities", activitiesRoutes);
+
+// Tasks routes
+app.use("/api/tasks", tasksRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
