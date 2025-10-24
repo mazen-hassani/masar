@@ -5,6 +5,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { authMiddleware, requireRole } from "../middleware/auth.middleware";
 import { projectsService } from "../services/projects.service";
 import { activitiesService } from "../services/activities.service";
+import { tasksService } from "../services/tasks.service";
 import { z } from "zod";
 
 const router = Router();
@@ -199,6 +200,190 @@ router.get("/:projectId/activities", authMiddleware, async (req: Request, res: R
   } catch (error) {
     if (error instanceof Error && error.message === "Project not found") {
       return res.status(404).json({ error: "Project not found" });
+    }
+    next(error);
+  }
+});
+
+/**
+ * GET /api/projects/:projectId/activities/:activityId/tasks
+ * Get all tasks in an activity
+ */
+router.get("/:projectId/activities/:activityId/tasks", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Verify project access
+    await projectsService.getProjectById(req.params.projectId, req.user!.id);
+
+    const skip = req.query.skip ? parseInt(req.query.skip as string) : 0;
+    const take = req.query.take ? parseInt(req.query.take as string) : 50;
+
+    const result = await tasksService.listTasksByActivity(req.params.activityId, skip, take);
+    res.json(result);
+  } catch (error) {
+    if (error instanceof Error && error.message === "Activity not found") {
+      return res.status(404).json({ error: "Activity not found" });
+    }
+    next(error);
+  }
+});
+
+/**
+ * PUT /api/projects/:projectId/activities/:activityId
+ * Update activity
+ */
+router.put("/:projectId/activities/:activityId", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Verify project access
+    await projectsService.getProjectById(req.params.projectId, req.user!.id);
+
+    const UpdateActivitySchema = z.object({
+      name: z.string().optional(),
+      description: z.string().optional(),
+      startDate: z.string().datetime().optional(),
+      endDate: z.string().datetime().optional(),
+      status: z.enum(["NOT_STARTED", "IN_PROGRESS", "ON_HOLD", "COMPLETED", "VERIFIED"]).optional(),
+      progressPercentage: z.number().min(0).max(100).optional(),
+    });
+
+    const validation = UpdateActivitySchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({
+        error: "Validation failed",
+        details: validation.error.errors,
+      });
+    }
+
+    const activity = await activitiesService.updateActivity(req.params.activityId, {
+      ...validation.data,
+      startDate: validation.data.startDate ? new Date(validation.data.startDate) : undefined,
+      endDate: validation.data.endDate ? new Date(validation.data.endDate) : undefined,
+    });
+
+    res.json(activity);
+  } catch (error) {
+    if (error instanceof Error && error.message === "Activity not found") {
+      return res.status(404).json({ error: "Activity not found" });
+    }
+    next(error);
+  }
+});
+
+/**
+ * DELETE /api/projects/:projectId/activities/:activityId
+ * Delete activity
+ */
+router.delete("/:projectId/activities/:activityId", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Verify project access
+    await projectsService.getProjectById(req.params.projectId, req.user!.id);
+
+    const result = await activitiesService.deleteActivity(req.params.activityId);
+    res.json(result);
+  } catch (error) {
+    if (error instanceof Error && error.message === "Activity not found") {
+      return res.status(404).json({ error: "Activity not found" });
+    }
+    next(error);
+  }
+});
+
+/**
+ * POST /api/projects/:projectId/activities/:activityId/tasks
+ * Create task in activity
+ */
+router.post("/:projectId/activities/:activityId/tasks", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Verify project access
+    await projectsService.getProjectById(req.params.projectId, req.user!.id);
+
+    const CreateTaskSchema = z.object({
+      name: z.string().min(1, "Task name is required"),
+      description: z.string().optional(),
+      startDate: z.string().datetime().optional(),
+      endDate: z.string().datetime().optional(),
+      duration: z.number().positive().optional(),
+      assigneeUserId: z.string().optional(),
+    });
+
+    const validation = CreateTaskSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({
+        error: "Validation failed",
+        details: validation.error.errors,
+      });
+    }
+
+    const task = await tasksService.createTask({
+      activityId: req.params.activityId,
+      ...validation.data,
+      startDate: validation.data.startDate ? new Date(validation.data.startDate) : new Date(),
+      endDate: validation.data.endDate ? new Date(validation.data.endDate) : new Date(),
+      duration: validation.data.duration || 8,
+    });
+
+    res.status(201).json(task);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * PUT /api/projects/:projectId/activities/:activityId/tasks/:taskId
+ * Update task
+ */
+router.put("/:projectId/activities/:activityId/tasks/:taskId", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Verify project access
+    await projectsService.getProjectById(req.params.projectId, req.user!.id);
+
+    const UpdateTaskSchema = z.object({
+      name: z.string().optional(),
+      description: z.string().optional(),
+      startDate: z.string().datetime().optional(),
+      endDate: z.string().datetime().optional(),
+      duration: z.number().positive().optional(),
+      assigneeUserId: z.string().nullable().optional(),
+      status: z.enum(["NOT_STARTED", "IN_PROGRESS", "ON_HOLD", "COMPLETED", "VERIFIED"]).optional(),
+      progressPercentage: z.number().min(0).max(100).optional(),
+    });
+
+    const validation = UpdateTaskSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({
+        error: "Validation failed",
+        details: validation.error.errors,
+      });
+    }
+
+    const task = await tasksService.updateTask(req.params.taskId, {
+      ...validation.data,
+      startDate: validation.data.startDate ? new Date(validation.data.startDate) : undefined,
+      endDate: validation.data.endDate ? new Date(validation.data.endDate) : undefined,
+    });
+
+    res.json(task);
+  } catch (error) {
+    if (error instanceof Error && error.message === "Task not found") {
+      return res.status(404).json({ error: "Task not found" });
+    }
+    next(error);
+  }
+});
+
+/**
+ * DELETE /api/projects/:projectId/activities/:activityId/tasks/:taskId
+ * Delete task
+ */
+router.delete("/:projectId/activities/:activityId/tasks/:taskId", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Verify project access
+    await projectsService.getProjectById(req.params.projectId, req.user!.id);
+
+    const result = await tasksService.deleteTask(req.params.taskId);
+    res.json(result);
+  } catch (error) {
+    if (error instanceof Error && error.message === "Task not found") {
+      return res.status(404).json({ error: "Task not found" });
     }
     next(error);
   }
