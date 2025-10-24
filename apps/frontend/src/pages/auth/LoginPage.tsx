@@ -2,7 +2,7 @@
 // ABOUTME: Handles user login, error display, and loading state management
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
 import { Button, Input, Card, CardHeader, CardContent, Alert } from "../../components/common";
@@ -115,12 +115,12 @@ export default function LoginPage() {
               </div>
 
               <div className="text-right">
-                <a
-                  href="/forgot-password"
+                <Link
+                  to="/forgot-password"
                   className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                 >
                   Forgot password?
-                </a>
+                </Link>
               </div>
 
               <Button

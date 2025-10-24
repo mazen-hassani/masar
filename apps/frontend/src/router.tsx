@@ -2,7 +2,7 @@
 // ABOUTME: Implements role-based access control and nested routing
 
 import React, { ReactNode } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, Link } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { Role } from "./types";
 
@@ -102,15 +102,15 @@ const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">Task Management</h1>
             <nav className="flex items-center space-x-6">
-              <a href="/dashboard" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+              <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
                 Dashboard
-              </a>
-              <a href="/projects" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+              </Link>
+              <Link to="/projects" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
                 Projects
-              </a>
-              <a href="/profile" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+              </Link>
+              <Link to="/profile" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
                 Profile
-              </a>
+              </Link>
               <div className="relative">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -120,12 +120,12 @@ const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
                 </button>
                 {isMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
-                    <a
-                      href="/profile"
+                    <Link
+                      to="/profile"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Account Settings
-                    </a>
+                    </Link>
                     <button
                       onClick={() => {
                         handleLogout();
