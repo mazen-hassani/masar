@@ -10,16 +10,20 @@ import {
   CardContent,
   Alert,
   Modal,
+  ProjectHeader,
+  ActivityCard,
+  StatCard,
 } from "../../components/common";
 import { ActivityForm } from "../../components/forms";
 import * as projectService from "../../services/projectService";
-import { Project, Activity, ActivityFormData } from "../../types";
+import { Project, Activity, Task, ActivityFormData } from "../../types";
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [activityTasks, setActivityTasks] = useState<Record<string, Task[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -42,6 +46,20 @@ export default function ProjectDetailPage() {
       ]);
       setProject(projectData);
       setActivities(activitiesData);
+
+      // Load tasks for each activity
+      const tasksMap: Record<string, Task[]> = {};
+      await Promise.all(
+        activitiesData.map(async (activity) => {
+          try {
+            const tasks = await projectService.getActivityTasks(projectId, activity.id);
+            tasksMap[activity.id] = tasks;
+          } catch {
+            tasksMap[activity.id] = [];
+          }
+        })
+      );
+      setActivityTasks(tasksMap);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to load project";
       setError(message);
@@ -59,6 +77,7 @@ export default function ProjectDetailPage() {
         description: data.description,
       });
       setActivities([...activities, newActivity]);
+      setActivityTasks({ ...activityTasks, [newActivity.id]: [] });
       setShowCreateModal(false);
     } catch (err) {
       const message =
@@ -71,16 +90,21 @@ export default function ProjectDetailPage() {
 
   const handleDeleteActivity = async (activityId: string) => {
     if (!projectId) return;
-    if (window.confirm("Are you sure you want to delete this activity?")) {
-      try {
-        await projectService.deleteActivity(projectId, activityId);
-        setActivities(activities.filter((a) => a.id !== activityId));
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Failed to delete activity";
-        setError(message);
-      }
+    try {
+      await projectService.deleteActivity(projectId, activityId);
+      setActivities(activities.filter((a) => a.id !== activityId));
+      const newTasksMap = { ...activityTasks };
+      delete newTasksMap[activityId];
+      setActivityTasks(newTasksMap);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete activity";
+      setError(message);
     }
+  };
+
+  const handleViewTasks = (activityId: string) => {
+    navigate(`/projects/${projectId}/activities/${activityId}`);
   };
 
   if (isLoading) {
@@ -104,26 +128,32 @@ export default function ProjectDetailPage() {
     );
   }
 
+  const projectTabs = [
+    { label: "Overview", path: `/projects/${projectId}`, icon: "📋" },
+    { label: "Gantt", path: `/projects/${projectId}/gantt`, icon: "📊" },
+    { label: "Kanban", path: `/projects/${projectId}/kanban`, icon: "📌" },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <Button
-            onClick={() => navigate("/projects")}
-            variant="secondary"
-            size="sm"
-            className="mb-3"
-          >
-            ← Back to Projects
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
-          <p className="text-gray-600 mt-2">{project.description}</p>
-        </div>
-        <Button onClick={() => setShowCreateModal(true)} variant="primary">
-          + New Activity
+      {/* Back Button */}
+      <div>
+        <Button
+          onClick={() => navigate("/projects")}
+          variant="secondary"
+          size="sm"
+          className="mb-4"
+        >
+          ← Back to Projects
         </Button>
       </div>
+
+      {/* Project Header */}
+      <ProjectHeader
+        project={project}
+        tabs={projectTabs}
+        activeTab={`/projects/${projectId}`}
+      />
 
       {/* Error Alert */}
       {error && (
@@ -135,36 +165,39 @@ export default function ProjectDetailPage() {
         />
       )}
 
-      {/* Project Info */}
-      <Card>
-        <CardHeader>
-          <h2 className="text-lg font-semibold text-gray-900">Project Details</h2>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <p className="text-gray-600 text-sm mb-1">Status</p>
-              <p className="text-gray-900 font-medium">{project.status || "Active"}</p>
-            </div>
-            <div>
-              <p className="text-gray-600 text-sm mb-1">Start Date</p>
-              <p className="text-gray-900 font-medium">
-                {project.startDate
-                  ? new Date(project.startDate).toLocaleDateString()
-                  : "Not set"}
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-600 text-sm mb-1">End Date</p>
-              <p className="text-gray-900 font-medium">
-                {project.endDate
-                  ? new Date(project.endDate).toLocaleDateString()
-                  : "Not set"}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Quick Stats */}
+      {activities.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <StatCard
+            label="Activities"
+            value={activities.length}
+            icon="📝"
+            color="blue"
+          />
+          <StatCard
+            label="Total Tasks"
+            value={Object.values(activityTasks).flat().length}
+            icon="✓"
+            color="green"
+          />
+          <StatCard
+            label="Completed"
+            value={Object.values(activityTasks)
+              .flat()
+              .filter((t) => t.status === "COMPLETED" || t.status === "VERIFIED").length}
+            icon="🎉"
+            color="purple"
+          />
+          <StatCard
+            label="In Progress"
+            value={Object.values(activityTasks)
+              .flat()
+              .filter((t) => t.status === "IN_PROGRESS").length}
+            icon="⚡"
+            color="yellow"
+          />
+        </div>
+      )}
 
       {/* Create Activity Modal */}
       <Modal
@@ -181,56 +214,45 @@ export default function ProjectDetailPage() {
       </Modal>
 
       {/* Activities List */}
-      <Card>
-        <CardHeader>
-          <h2 className="text-lg font-semibold text-gray-900">Activities</h2>
-        </CardHeader>
-        <CardContent>
-          {activities.length === 0 ? (
-            <div className="py-8 text-center text-gray-500">
-              <p>No activities yet. Create one to get started!</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {activities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
-                >
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">
-                      {activity.name}
-                    </h3>
-                    <p className="text-gray-600 text-sm mt-1">
-                      {activity.description || "No description"}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() =>
-                        navigate(
-                          `/projects/${projectId}/activities/${activity.id}`
-                        )
-                      }
-                      variant="primary"
-                      size="sm"
-                    >
-                      Manage
-                    </Button>
-                    <Button
-                      onClick={() => handleDeleteActivity(activity.id)}
-                      variant="danger"
-                      size="sm"
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Activities</h2>
+          <Button onClick={() => setShowCreateModal(true)} variant="primary">
+            + New Activity
+          </Button>
+        </div>
+
+        {activities.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-6xl mb-4">🎯</p>
+              <p className="text-gray-600 mb-4 text-lg font-medium">
+                No activities yet
+              </p>
+              <p className="text-gray-500 mb-6">
+                Create your first activity to organize your project work
+              </p>
+              <Button onClick={() => setShowCreateModal(true)} variant="primary">
+                Create Activity
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {activities.map((activity) => (
+              <ActivityCard
+                key={activity.id}
+                activity={activity}
+                tasks={activityTasks[activity.id] || []}
+                onEdit={() => {}} // TODO: Add edit modal
+                onDelete={handleDeleteActivity}
+                onViewTasks={handleViewTasks}
+                onTaskClick={() => handleViewTasks(activity.id)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
