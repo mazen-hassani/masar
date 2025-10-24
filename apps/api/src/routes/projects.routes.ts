@@ -45,7 +45,7 @@ router.post("/", authMiddleware, async (req: Request, res: Response, next: NextF
     const project = await projectsService.createProject({
       ...validation.data,
       startDate: new Date(validation.data.startDate),
-      ownerUserId: req.user!.userId,
+      ownerUserId: req.user!.id,
       organisationId: req.user!.organisationId,
     });
 
@@ -71,7 +71,7 @@ router.get("/", authMiddleware, async (req: Request, res: Response, next: NextFu
 
     const result = await projectsService.listProjects({
       organisationId: req.user!.organisationId,
-      userId: req.user!.userId,
+      userId: req.user!.id,
       status: status as any,
       skip,
       take: Math.min(take, 100), // Cap at 100
@@ -98,7 +98,7 @@ router.get("/", authMiddleware, async (req: Request, res: Response, next: NextFu
  */
 router.get("/:id", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const project = await projectsService.getProjectById(req.params.id, req.user!.userId);
+    const project = await projectsService.getProjectById(req.params.id, req.user!.id);
     res.json(project);
   } catch (error) {
     if (error instanceof Error && error.message === "Project not found") {
@@ -126,7 +126,7 @@ router.put("/:id", authMiddleware, async (req: Request, res: Response, next: Nex
       });
     }
 
-    const project = await projectsService.updateProject(req.params.id, validation.data, req.user!.userId);
+    const project = await projectsService.updateProject(req.params.id, validation.data, req.user!.id);
 
     res.json(project);
   } catch (error) {
@@ -146,7 +146,7 @@ router.put("/:id", authMiddleware, async (req: Request, res: Response, next: Nex
  */
 router.delete("/:id", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await projectsService.deleteProject(req.params.id, req.user!.userId);
+    const result = await projectsService.deleteProject(req.params.id, req.user!.id);
     res.json(result);
   } catch (error) {
     if (error instanceof Error && error.message === "Project not found") {
@@ -166,7 +166,7 @@ router.delete("/:id", authMiddleware, async (req: Request, res: Response, next: 
 router.get("/:id/stats", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Verify access first
-    await projectsService.getProjectById(req.params.id, req.user!.userId);
+    await projectsService.getProjectById(req.params.id, req.user!.id);
 
     const stats = await projectsService.getProjectStats(req.params.id);
     res.json(stats);
