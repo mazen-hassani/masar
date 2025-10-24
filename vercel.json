@@ -2,7 +2,7 @@
   "version": 2,
   "buildCommand": "turbo run build --filter=@masar/frontend",
   "outputDirectory": "apps/frontend/dist",
-  "installCommand": "pnpm install",
+  "installCommand": "corepack enable && corepack prepare pnpm@9.12.3 --activate && pnpm install",
   "regions": ["iad1"],
   "rewrites": [
     {
