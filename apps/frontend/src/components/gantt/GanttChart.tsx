@@ -2,7 +2,6 @@
 // ABOUTME: Shows task durations, dependencies, and critical path with interactive features
 
 import React, { useMemo, useState } from "react";
-import { ProgressBar } from "../common";
 
 export interface GanttTask {
   id: string;
@@ -196,7 +195,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
 
             {/* Tasks and bars */}
             <div style={{ height: tasks.length * taskHeight }}>
-              {tasks.map((task, idx) => {
+              {tasks.map((task) => {
                 const startPos = calculatePosition(new Date(task.startDate));
                 const endPos = calculatePosition(new Date(task.endDate));
                 const barWidth = Math.max(endPos - startPos, 2);

@@ -98,6 +98,7 @@ export interface Project {
   ownerUserId: string;
   owner?: User;
   status: Status;
+  progressPercentage: number;
   startDate: Date;
   endDate: Date;
   timezone: string;

@@ -5,7 +5,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Project } from "../../types";
 import { StatusBadge, ProgressBar } from "./index";
-import { Button } from "./Button";
 
 interface ProjectHeaderProps {
   project: Project;
