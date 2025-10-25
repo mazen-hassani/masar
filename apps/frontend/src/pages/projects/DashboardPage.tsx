@@ -1,9 +1,9 @@
 // ABOUTME: Project dashboard landing page showing overview and analytics
 // ABOUTME: Displays user information, project metrics, and key performance indicators
 
-import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardHeader, CardContent, Alert } from "../../components/common";
 import {
   ProgressChart,
@@ -13,66 +13,37 @@ import {
 } from "../../components/charts";
 import * as analyticsService from "../../services/analyticsService";
 
-interface DashboardData {
-  projectMetrics: {
-    totalProjects: number;
-    activeProjects: number;
-    completedProjects: number;
-    onTrackProjects: number;
-    atRiskProjects: number;
-    offTrackProjects: number;
-  };
-  taskMetrics: {
-    totalTasks: number;
-    completedTasks: number;
-    inProgressTasks: number;
-    overdueTasks: number;
-    completionRate: number;
-  };
-}
-
 export default function DashboardPage() {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+  // Use React Query for real-time dashboard data updates
+  const { data: analytics, isLoading, error } = useQuery({
+    queryKey: ["dashboard-analytics"],
+    queryFn: () => analyticsService.getDashboardAnalytics(),
+    retry: 1,
+    // Data will be refetched after staleTime (1 minute configured in App.tsx)
+  });
 
-  const loadDashboardData = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const analytics = await analyticsService.getDashboardAnalytics();
-      setDashboardData({
-        projectMetrics: analytics.projectMetrics,
-        taskMetrics: analytics.taskMetrics,
-      });
-    } catch (err) {
-      // Gracefully handle analytics load failure with mock data
-      setDashboardData({
-        projectMetrics: {
-          totalProjects: 0,
-          activeProjects: 0,
-          completedProjects: 0,
-          onTrackProjects: 0,
-          atRiskProjects: 0,
-          offTrackProjects: 0,
-        },
-        taskMetrics: {
-          totalTasks: 0,
-          completedTasks: 0,
-          inProgressTasks: 0,
-          overdueTasks: 0,
-          completionRate: 0,
-        },
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const dashboardData = analytics ? {
+    projectMetrics: analytics.projectMetrics,
+    taskMetrics: analytics.taskMetrics,
+  } : {
+    projectMetrics: {
+      totalProjects: 0,
+      activeProjects: 0,
+      completedProjects: 0,
+      onTrackProjects: 0,
+      atRiskProjects: 0,
+      offTrackProjects: 0,
+    },
+    taskMetrics: {
+      totalTasks: 0,
+      completedTasks: 0,
+      inProgressTasks: 0,
+      overdueTasks: 0,
+      completionRate: 0,
+    },
   };
 
   return (
@@ -89,7 +60,11 @@ export default function DashboardPage() {
 
       {/* Error Alert */}
       {error && (
-        <Alert variant="error" title="Error" message={error} />
+        <Alert
+          variant="error"
+          title={t('error')}
+          message={error instanceof Error ? error.message : t('failed')}
+        />
       )}
 
       {/* Loading State */}

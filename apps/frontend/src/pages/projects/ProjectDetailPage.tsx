@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "../../context/LanguageContext";
 import {
   Button,
@@ -23,6 +24,7 @@ export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const queryClient = useQueryClient();
   const [project, setProject] = useState<Project | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activityTasks, setActivityTasks] = useState<Record<string, Task[]>>({});
@@ -83,9 +85,12 @@ export default function ProjectDetailPage() {
       setActivities([...activities, newActivity]);
       setActivityTasks({ ...activityTasks, [newActivity.id]: [] });
       setShowCreateModal(false);
+
+      // Invalidate dashboard analytics so it refreshes with new activity/tasks
+      queryClient.invalidateQueries({ queryKey: ["dashboard-analytics"] });
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to create activity";
+        err instanceof Error ? err.message : t('failed');
       setError(message);
     } finally {
       setIsSubmitting(false);

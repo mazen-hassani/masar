@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "../../context/LanguageContext";
 import {
   Button,
@@ -21,6 +22,7 @@ import { Project, ProjectFormData } from "../../types";
 export default function ProjectsPage() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const queryClient = useQueryClient();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,8 +57,11 @@ export default function ProjectsPage() {
       });
       setProjects([...projects, newProject]);
       setShowCreateModal(false);
+
+      // Invalidate dashboard analytics so it refreshes with new project
+      queryClient.invalidateQueries({ queryKey: ["dashboard-analytics"] });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to create project";
+      const message = err instanceof Error ? err.message : t('failed');
       setError(message);
     } finally {
       setIsSubmitting(false);
