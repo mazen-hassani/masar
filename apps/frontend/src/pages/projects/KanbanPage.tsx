@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
-import { Card, CardHeader, CardContent, Alert, Button } from "../../components/common";
+import { Alert, Button } from "../../components/common";
 import {
   KanbanBoard,
   KanbanCard,
@@ -171,7 +171,7 @@ export default function KanbanPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow text-center">
             <p className="text-2xl mb-1">📊</p>
-            <p className="text-gray-600 text-xs font-medium">{t('total')}</p>
+            <p className="text-gray-600 text-xs font-medium">Total</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">{taskStats.total}</p>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow text-center">

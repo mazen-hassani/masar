@@ -7,13 +7,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "../../context/LanguageContext";
 import {
   Button,
-  Card,
-  CardContent,
   Alert,
   Modal,
-  StatusBadge,
-  ProgressBar,
-  StatCard,
 } from "../../components/common";
 import { ProjectForm } from "../../components/forms";
 import * as projectService from "../../services/projectService";
