@@ -98,10 +98,12 @@ const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="bg-white shadow sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">Task Management</h1>
-            <nav className="flex items-center space-x-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex justify-between items-center gap-4">
+            <h1 className="text-lg sm:text-2xl font-bold text-gray-900">📊 Task Manager</h1>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-6">
               <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
                 Dashboard
               </Link>
@@ -116,7 +118,7 @@ const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="text-gray-600 hover:text-gray-900 text-sm font-medium flex items-center gap-1"
                 >
-                  ⚙️ Menu
+                  ⚙️
                 </button>
                 {isMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
@@ -140,18 +142,60 @@ const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
                 )}
               </div>
             </nav>
+
+            {/* Mobile Menu */}
+            <div className="md:hidden relative">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-gray-600 hover:text-gray-900 text-2xl"
+              >
+                ☰
+              </button>
+              {isMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
+                  <Link
+                    to="/dashboard"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    to="/projects"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Projects
+                  </Link>
+                  <Link
+                    to="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    disabled={isLoading}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                  >
+                    {isLoading ? "Signing out..." : "Sign Out"}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
         {children}
       </main>
 
       {/* Footer */}
       <footer className="bg-gray-50 border-t">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-gray-500 text-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-center text-gray-500 text-xs sm:text-sm">
           <p>&copy; 2024 Task Management Tool. All rights reserved.</p>
         </div>
       </footer>
