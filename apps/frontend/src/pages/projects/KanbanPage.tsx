@@ -2,7 +2,7 @@
 // ABOUTME: Allows drag-and-drop task status updates and task management
 
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
 import { Card, CardHeader, CardContent, Alert, Button } from "../../components/common";
 import {
@@ -16,13 +16,34 @@ interface KanbanCardWithActivity extends KanbanCard {
   activityId: string;
 }
 
+// Status configuration for visual styling
+const STATUS_CONFIG: Record<Status, { icon: string; color: string; bgColor: string; borderColor: string }> = {
+  NOT_STARTED: { icon: "○", color: "slate", bgColor: "bg-slate-50", borderColor: "border-slate-200" },
+  IN_PROGRESS: { icon: "⚡", color: "blue", bgColor: "bg-blue-50", borderColor: "border-blue-200" },
+  ON_HOLD: { icon: "⏸", color: "amber", bgColor: "bg-amber-50", borderColor: "border-amber-200" },
+  COMPLETED: { icon: "✓", color: "emerald", bgColor: "bg-emerald-50", borderColor: "border-emerald-200" },
+  VERIFIED: { icon: "✓✓", color: "purple", bgColor: "bg-purple-50", borderColor: "border-purple-200" },
+};
+
 export default function KanbanPage() {
   const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const [tasks, setTasks] = useState<KanbanCardWithActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<KanbanCardWithActivity | null>(null);
+  const [project, setProject] = useState<any>(null);
+
+  // Calculate task statistics
+  const taskStats = {
+    total: tasks.length,
+    notStarted: tasks.filter((t) => t.status === Status.NOT_STARTED).length,
+    inProgress: tasks.filter((t) => t.status === Status.IN_PROGRESS).length,
+    onHold: tasks.filter((t) => t.status === Status.ON_HOLD).length,
+    completed: tasks.filter((t) => t.status === Status.COMPLETED).length,
+    verified: tasks.filter((t) => t.status === Status.VERIFIED).length,
+  };
 
   useEffect(() => {
     if (projectId) {
@@ -35,7 +56,13 @@ export default function KanbanPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const activities = await projectService.getProjectActivities(projectId);
+      // Load project details and activities in parallel
+      const [projectData, activities] = await Promise.all([
+        projectService.getProject(projectId),
+        projectService.getProjectActivities(projectId),
+      ]);
+
+      setProject(projectData);
 
       // Collect all tasks from all activities
       const allTasks: KanbanCardWithActivity[] = [];
@@ -101,10 +128,10 @@ export default function KanbanPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Back Button */}
       <Button
-        onClick={() => window.history.back()}
+        onClick={() => navigate(`/projects/${projectId}`)}
         variant="secondary"
         size="sm"
         className="mb-2"
@@ -112,13 +139,22 @@ export default function KanbanPage() {
         ← {t('back')}
       </Button>
 
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">📌 {t('task_board')}</h1>
-        <p className="text-gray-600 mt-2">
-          {t('board_description')}
-        </p>
-      </div>
+      {/* Gradient Header */}
+      {project && (
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-blue-600 to-teal-600 p-8 md:p-12 shadow-lg">
+          <div className="relative z-10">
+            <div className="inline-block mb-3">
+              <span className="text-5xl">📌</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
+              {project.name}
+            </h1>
+            <p className="text-blue-100 text-lg">
+              {t('task_board')} • {taskStats.total} {taskStats.total === 1 ? "task" : "tasks"}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Error Alert */}
       {error && (
@@ -130,9 +166,45 @@ export default function KanbanPage() {
         />
       )}
 
+      {/* Task Statistics */}
+      {!isLoading && tasks.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow text-center">
+            <p className="text-2xl mb-1">📊</p>
+            <p className="text-gray-600 text-xs font-medium">{t('total')}</p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">{taskStats.total}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow text-center">
+            <p className="text-2xl mb-1">{STATUS_CONFIG.NOT_STARTED.icon}</p>
+            <p className="text-gray-600 text-xs font-medium">Not Started</p>
+            <p className="text-2xl font-bold text-slate-600 mt-1">{taskStats.notStarted}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-blue-200 p-4 hover:shadow-md transition-shadow text-center">
+            <p className="text-2xl mb-1">{STATUS_CONFIG.IN_PROGRESS.icon}</p>
+            <p className="text-gray-600 text-xs font-medium">In Progress</p>
+            <p className="text-2xl font-bold text-blue-600 mt-1">{taskStats.inProgress}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-amber-200 p-4 hover:shadow-md transition-shadow text-center">
+            <p className="text-2xl mb-1">{STATUS_CONFIG.ON_HOLD.icon}</p>
+            <p className="text-gray-600 text-xs font-medium">On Hold</p>
+            <p className="text-2xl font-bold text-amber-600 mt-1">{taskStats.onHold}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-emerald-200 p-4 hover:shadow-md transition-shadow text-center">
+            <p className="text-2xl mb-1">{STATUS_CONFIG.COMPLETED.icon}</p>
+            <p className="text-gray-600 text-xs font-medium">Completed</p>
+            <p className="text-2xl font-bold text-emerald-600 mt-1">{taskStats.completed}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-purple-200 p-4 hover:shadow-md transition-shadow text-center">
+            <p className="text-2xl mb-1">{STATUS_CONFIG.VERIFIED.icon}</p>
+            <p className="text-gray-600 text-xs font-medium">Verified</p>
+            <p className="text-2xl font-bold text-purple-600 mt-1">{taskStats.verified}</p>
+          </div>
+        </div>
+      )}
+
       {/* Loading State */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-16">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">{t('loading')}</p>
@@ -140,14 +212,20 @@ export default function KanbanPage() {
         </div>
       ) : (
         <>
-          {/* Kanban Board */}
-          <Card>
-            <CardContent className="pt-6 overflow-x-auto">
-              {tasks.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <p>{t('no_tasks')}</p>
+          {/* Kanban Board Container */}
+          <div className="bg-gradient-to-b from-gray-50 to-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+            {tasks.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="inline-block mb-4">
+                  <span className="text-7xl">📋</span>
                 </div>
-              ) : (
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{t('no_tasks')}</h3>
+                <p className="text-gray-600 mb-6">
+                  {t('create_first_project')}
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
                 <KanbanBoard
                   cards={tasks}
                   onCardMove={handleCardMove}
@@ -160,44 +238,83 @@ export default function KanbanPage() {
                     Status.VERIFIED,
                   ]}
                 />
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            )}
+          </div>
 
-          {/* Task Details */}
+          {/* Task Details Sidebar */}
           {selectedCard && (
-            <Card>
-              <CardHeader>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Task Details: {selectedCard.title}
-                </h2>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-md">
+              <div className="bg-gradient-to-r from-blue-500 to-teal-500 px-6 py-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">Task Details</h2>
+                <button
+                  onClick={() => setSelectedCard(null)}
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-1 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Task Title */}
+                <div>
+                  <p className="text-gray-600 text-xs font-semibold uppercase tracking-wider mb-2">
+                    Task Title
+                  </p>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    {selectedCard.title}
+                  </h3>
+                </div>
+
+                {/* Description */}
                 {selectedCard.description && (
                   <div>
-                    <p className="text-gray-600 text-sm mb-1">Description</p>
-                    <p className="text-gray-900">{selectedCard.description}</p>
+                    <p className="text-gray-600 text-xs font-semibold uppercase tracking-wider mb-2">
+                      Description
+                    </p>
+                    <p className="text-gray-700 leading-relaxed">
+                      {selectedCard.description}
+                    </p>
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-gray-600 text-sm mb-1">{t('status')}</p>
-                    <p className="text-gray-900 font-medium">
-                      {selectedCard.status.replace(/_/g, " ")}
-                    </p>
+                {/* Status */}
+                <div>
+                  <p className="text-gray-600 text-xs font-semibold uppercase tracking-wider mb-2">
+                    {t('status')}
+                  </p>
+                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm ${
+                    selectedCard.status === Status.COMPLETED ? 'bg-emerald-100 text-emerald-700' :
+                    selectedCard.status === Status.IN_PROGRESS ? 'bg-blue-100 text-blue-700' :
+                    selectedCard.status === Status.ON_HOLD ? 'bg-amber-100 text-amber-700' :
+                    selectedCard.status === Status.NOT_STARTED ? 'bg-slate-100 text-slate-700' :
+                    'bg-purple-100 text-purple-700'
+                  }`}>
+                    <span className="text-lg">
+                      {selectedCard.status === Status.COMPLETED ? '✓' :
+                       selectedCard.status === Status.IN_PROGRESS ? '⚡' :
+                       selectedCard.status === Status.ON_HOLD ? '⏸' :
+                       selectedCard.status === Status.NOT_STARTED ? '○' : '✓✓'}
+                    </span>
+                    <span>{selectedCard.status.replace(/_/g, " ")}</span>
                   </div>
+                </div>
 
+                {/* Two Column Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Priority */}
                   {selectedCard.priority && (
                     <div>
-                      <p className="text-gray-600 text-sm mb-1">Priority</p>
+                      <p className="text-gray-600 text-xs font-semibold uppercase tracking-wider mb-2">
+                        Priority
+                      </p>
                       <span
-                        className={`inline-block px-3 py-1 rounded text-sm font-medium ${
+                        className={`inline-block px-4 py-2 rounded-lg text-sm font-bold ${
                           selectedCard.priority === "high"
-                            ? "bg-red-100 text-red-800"
+                            ? "bg-red-100 text-red-700"
                             : selectedCard.priority === "medium"
-                              ? "bg-orange-100 text-orange-800"
-                              : "bg-blue-100 text-blue-800"
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-blue-100 text-blue-700"
                         }`}
                       >
                         {selectedCard.priority.toUpperCase()}
@@ -205,26 +322,52 @@ export default function KanbanPage() {
                     </div>
                   )}
 
+                  {/* Due Date */}
                   {selectedCard.dueDate && (
                     <div>
-                      <p className="text-gray-600 text-sm mb-1">{t('end_date')}</p>
-                      <p className="text-gray-900 font-medium">
-                        {new Date(selectedCard.dueDate).toLocaleDateString()}
+                      <p className="text-gray-600 text-xs font-semibold uppercase tracking-wider mb-2">
+                        {t('end_date')}
                       </p>
-                    </div>
-                  )}
-
-                  {selectedCard.assignee && (
-                    <div>
-                      <p className="text-gray-600 text-sm mb-1">{t('assign_to')}</p>
                       <p className="text-gray-900 font-medium">
-                        {selectedCard.assignee}
+                        {new Date(selectedCard.dueDate).toLocaleDateString("en-US", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {selectedCard.dueDate.getTime() < Date.now() ? "Overdue" :
+                         Math.ceil((selectedCard.dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) + " days left"}
                       </p>
                     </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+
+                {/* Assignee */}
+                {selectedCard.assignee && (
+                  <div>
+                    <p className="text-gray-600 text-xs font-semibold uppercase tracking-wider mb-2">
+                      {t('assign_to')}
+                    </p>
+                    <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                        {selectedCard.assignee.charAt(0)}
+                      </div>
+                      <p className="text-gray-900 font-medium">{selectedCard.assignee}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Close Button */}
+                <button
+                  onClick={() => setSelectedCard(null)}
+                  className="w-full mt-4 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold rounded-lg transition-colors"
+                >
+                  Close Details
+                </button>
+              </div>
+            </div>
           )}
         </>
       )}
