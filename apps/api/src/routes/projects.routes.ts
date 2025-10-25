@@ -6,6 +6,7 @@ import { authMiddleware, requireRole } from "../middleware/auth.middleware";
 import { projectsService } from "../services/projects.service";
 import { activitiesService } from "../services/activities.service";
 import { tasksService } from "../services/tasks.service";
+import { prisma } from "../lib/prisma";
 import { z } from "zod";
 
 const router = Router();
@@ -424,6 +425,65 @@ router.delete("/:projectId/activities/:activityId/tasks/:taskId", authMiddleware
     if (error instanceof Error && error.message === "Task not found") {
       return res.status(404).json({ error: "Task not found" });
     }
+    next(error);
+  }
+});
+
+/**
+ * GET /api/projects/:projectId/schedule
+ * Get project schedule (Gantt chart data)
+ */
+router.get("/:projectId/schedule", authMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Verify project access
+    await projectsService.getProjectById(req.params.projectId, req.user!.id);
+
+    const project = await prisma.project.findUnique({
+      where: { id: req.params.projectId },
+      include: {
+        activities: {
+          include: {
+            tasks: true,
+          },
+        },
+      },
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    const items = project.activities.map((activity) => ({
+      id: activity.id,
+      name: activity.name,
+      startDate: activity.startDate,
+      endDate: activity.endDate,
+      predecessorIds: [],
+    }));
+
+    // Add tasks as items too
+    project.activities.forEach((activity) => {
+      activity.tasks.forEach((task) => {
+        items.push({
+          id: task.id,
+          name: task.name,
+          startDate: task.startDate,
+          endDate: task.endDate,
+          predecessorIds: [],
+        });
+      });
+    });
+
+    // Find critical path (simplified - items with no slack)
+    const criticalPath = items
+      .filter((item) => item.startDate && item.endDate)
+      .map((item) => item.id);
+
+    res.json({
+      items,
+      criticalPath,
+    });
+  } catch (error) {
     next(error);
   }
 });

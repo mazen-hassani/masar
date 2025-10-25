@@ -10,6 +10,7 @@ import authRoutes from "./routes/auth.routes";
 import projectsRoutes from "./routes/projects.routes";
 import activitiesRoutes from "./routes/activities.routes";
 import tasksRoutes from "./routes/tasks.routes";
+import analyticsRoutes from "./routes/analytics.routes";
 
 dotenv.config();
 
@@ -58,6 +59,9 @@ app.use("/api/activities", activitiesRoutes);
 
 // Tasks routes
 app.use("/api/tasks", tasksRoutes);
+
+// Analytics routes
+app.use("/api/analytics", analyticsRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
