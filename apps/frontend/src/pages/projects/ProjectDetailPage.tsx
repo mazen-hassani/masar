@@ -12,6 +12,7 @@ import {
   ProjectHeader,
   ActivityCard,
   StatCard,
+  TaskDetailModal,
 } from "../../components/common";
 import { ActivityForm } from "../../components/forms";
 import * as projectService from "../../services/projectService";
@@ -27,6 +28,8 @@ export default function ProjectDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   useEffect(() => {
     if (projectId) {
@@ -104,6 +107,11 @@ export default function ProjectDetailPage() {
 
   const handleViewTasks = (activityId: string) => {
     navigate(`/projects/${projectId}/activities/${activityId}`);
+  };
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    setShowTaskModal(true);
   };
 
   if (isLoading) {
@@ -212,6 +220,34 @@ export default function ProjectDetailPage() {
         />
       </Modal>
 
+      {/* View Selector - Prominent Chart Navigation */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <button
+          onClick={() => {}}
+          className="p-4 bg-white border-2 border-blue-500 rounded-lg hover:bg-blue-50 transition-colors text-left"
+        >
+          <p className="text-2xl mb-2">📋</p>
+          <p className="font-semibold text-gray-900">Overview</p>
+          <p className="text-sm text-gray-600 mt-1">View activities and tasks</p>
+        </button>
+        <button
+          onClick={() => navigate(`/projects/${projectId}/gantt`)}
+          className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
+        >
+          <p className="text-2xl mb-2">📊</p>
+          <p className="font-semibold text-gray-900">Gantt Chart</p>
+          <p className="text-sm text-gray-600 mt-1">View project timeline</p>
+        </button>
+        <button
+          onClick={() => navigate(`/projects/${projectId}/kanban`)}
+          className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
+        >
+          <p className="text-2xl mb-2">📌</p>
+          <p className="font-semibold text-gray-900">Kanban Board</p>
+          <p className="text-sm text-gray-600 mt-1">Manage tasks by status</p>
+        </button>
+      </div>
+
       {/* Activities List */}
       <div>
         <div className="flex justify-between items-center mb-6">
@@ -246,12 +282,22 @@ export default function ProjectDetailPage() {
                 onEdit={() => {}} // TODO: Add edit modal
                 onDelete={handleDeleteActivity}
                 onViewTasks={handleViewTasks}
-                onTaskClick={() => handleViewTasks(activity.id)}
+                onTaskClick={handleTaskClick}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Task Detail Modal */}
+      <TaskDetailModal
+        task={selectedTask}
+        isOpen={showTaskModal}
+        onClose={() => {
+          setShowTaskModal(false);
+          setSelectedTask(null);
+        }}
+      />
     </div>
   );
 }

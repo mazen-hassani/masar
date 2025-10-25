@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Card, CardHeader, CardContent, Alert } from "../../components/common";
+import { Card, CardHeader, CardContent, Alert, Button } from "../../components/common";
 import { GanttChart, GanttTask } from "../../components/gantt/GanttChart";
 import * as projectService from "../../services/projectService";
 
@@ -51,11 +51,21 @@ export default function GanttPage() {
 
   return (
     <div className="space-y-6">
+      {/* Back Button */}
+      <Button
+        onClick={() => window.history.back()}
+        variant="secondary"
+        size="sm"
+        className="mb-2"
+      >
+        ← Back to Project
+      </Button>
+
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Project Timeline</h1>
+        <h1 className="text-3xl font-bold text-gray-900">📊 Project Timeline</h1>
         <p className="text-gray-600 mt-2">
-          Visual representation of project schedule and task dependencies
+          Visual representation of project schedule with task dependencies and critical path
         </p>
       </div>
 

@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Card, CardHeader, CardContent, Alert } from "../../components/common";
+import { Card, CardHeader, CardContent, Alert, Button } from "../../components/common";
 import {
   KanbanBoard,
   KanbanCard,
@@ -87,11 +87,21 @@ export default function KanbanPage() {
 
   return (
     <div className="space-y-6">
+      {/* Back Button */}
+      <Button
+        onClick={() => window.history.back()}
+        variant="secondary"
+        size="sm"
+        className="mb-2"
+      >
+        ← Back to Project
+      </Button>
+
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Task Board</h1>
+        <h1 className="text-3xl font-bold text-gray-900">📌 Task Board</h1>
         <p className="text-gray-600 mt-2">
-          Organize and manage tasks by status. Drag and drop to update task status.
+          Organize and manage tasks by status. Drag and drop to update task status or click a card for details.
         </p>
       </div>
 

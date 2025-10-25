@@ -11,3 +11,4 @@ export { ProgressBar } from "./ProgressBar";
 export { StatCard } from "./StatCard";
 export { ProjectHeader } from "./ProjectHeader";
 export { ActivityCard } from "./ActivityCard";
+export { TaskDetailModal } from "./TaskDetailModal";
