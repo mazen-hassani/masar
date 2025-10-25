@@ -4,6 +4,7 @@
 import React, { ReactNode } from "react";
 import { Navigate, Outlet, Link } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+import { useLanguage } from "./context/LanguageContext";
 import { Role } from "./types";
 
 // Page imports
@@ -84,7 +85,9 @@ const PublicRoute: React.FC = () => {
  */
 const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { logout, isLoading } = useAuth();
+  const { t, language, setLanguage } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isLanguageOpen, setIsLanguageOpen] = React.useState(false);
 
   const handleLogout = async () => {
     try {
@@ -95,38 +98,113 @@ const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow sticky top-0 z-40">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-50">
+      {/* Header - Modern Design */}
+      <header className="bg-white shadow-md sticky top-0 z-40 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex justify-between items-center gap-4">
-            <h1 className="text-lg sm:text-2xl font-bold text-gray-900">📊 Task Manager</h1>
+            {/* Logo and App Name */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                M
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+                  {t('app_name')}
+                </h1>
+                <p className="text-xs text-gray-500">{t('app_tagline')}</p>
+              </div>
+            </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
-                Dashboard
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link
+                to="/dashboard"
+                className="text-gray-600 hover:text-blue-600 text-sm font-medium transition-colors"
+              >
+                {t('dashboard')}
               </Link>
-              <Link to="/projects" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
-                Projects
+              <Link
+                to="/projects"
+                className="text-gray-600 hover:text-blue-600 text-sm font-medium transition-colors"
+              >
+                {t('projects')}
               </Link>
-              <Link to="/profile" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
-                Profile
+              <Link
+                to="/profile"
+                className="text-gray-600 hover:text-blue-600 text-sm font-medium transition-colors"
+              >
+                {t('profile')}
               </Link>
+
+              {/* Language Selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsLanguageOpen(!isLanguageOpen)}
+                  className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 border border-gray-300 rounded-lg hover:border-blue-600 transition-all flex items-center gap-2"
+                >
+                  🌐 {language.toUpperCase()}
+                </button>
+                {isLanguageOpen && (
+                  <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
+                    <button
+                      onClick={() => {
+                        setLanguage('en');
+                        setIsLanguageOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm ${
+                        language === 'en'
+                          ? 'bg-blue-50 text-blue-600 font-medium'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      English
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLanguage('ar');
+                        setIsLanguageOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm ${
+                        language === 'ar'
+                          ? 'bg-blue-50 text-blue-600 font-medium'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      العربية
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLanguage('hi');
+                        setIsLanguageOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm ${
+                        language === 'hi'
+                          ? 'bg-blue-50 text-blue-600 font-medium'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      हिन्दी
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Settings Menu */}
               <div className="relative">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="text-gray-600 hover:text-gray-900 text-sm font-medium flex items-center gap-1"
+                  className="p-2 text-gray-600 hover:text-blue-600 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   ⚙️
                 </button>
                 {isMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
                     <Link
                       to="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                     >
-                      Account Settings
+                      {t('settings')}
                     </Link>
                     <button
                       onClick={() => {
@@ -134,9 +212,9 @@ const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
                         setIsMenuOpen(false);
                       }}
                       disabled={isLoading}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                     >
-                      {isLoading ? "Signing out..." : "Sign Out"}
+                      {isLoading ? t('loading') : t('sign_out')}
                     </button>
                   </div>
                 )}
@@ -144,7 +222,60 @@ const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
             </nav>
 
             {/* Mobile Menu */}
-            <div className="md:hidden relative">
+            <div className="md:hidden flex items-center gap-3">
+              {/* Mobile Language Selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsLanguageOpen(!isLanguageOpen)}
+                  className="p-2 text-gray-600 hover:text-blue-600 text-lg"
+                >
+                  🌐
+                </button>
+                {isLanguageOpen && (
+                  <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
+                    <button
+                      onClick={() => {
+                        setLanguage('en');
+                        setIsLanguageOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1 text-xs ${
+                        language === 'en'
+                          ? 'bg-blue-50 text-blue-600 font-medium'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      English
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLanguage('ar');
+                        setIsLanguageOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1 text-xs ${
+                        language === 'ar'
+                          ? 'bg-blue-50 text-blue-600 font-medium'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      العربية
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLanguage('hi');
+                        setIsLanguageOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1 text-xs ${
+                        language === 'hi'
+                          ? 'bg-blue-50 text-blue-600 font-medium'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      हिन्दी
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="text-gray-600 hover:text-gray-900 text-2xl"
@@ -152,24 +283,24 @@ const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
                 ☰
               </button>
               {isMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
+                <div className="absolute right-0 top-16 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
                   <Link
                     to="/dashboard"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                   >
-                    Dashboard
+                    {t('dashboard')}
                   </Link>
                   <Link
                     to="/projects"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                   >
-                    Projects
+                    {t('projects')}
                   </Link>
                   <Link
                     to="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                   >
-                    Profile
+                    {t('profile')}
                   </Link>
                   <button
                     onClick={() => {
@@ -177,9 +308,9 @@ const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
                       setIsMenuOpen(false);
                     }}
                     disabled={isLoading}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                   >
-                    {isLoading ? "Signing out..." : "Sign Out"}
+                    {isLoading ? t('loading') : t('sign_out')}
                   </button>
                 </div>
               )}
@@ -194,9 +325,9 @@ const LayoutWrapper: React.FC<{ children: ReactNode }> = ({ children }) => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-50 border-t">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-center text-gray-500 text-xs sm:text-sm">
-          <p>&copy; 2024 Task Management Tool. All rights reserved.</p>
+      <footer className="bg-white border-t border-slate-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-center text-gray-500 text-xs sm:text-sm">
+          <p>&copy; 2024 {t('app_name')}. All rights reserved.</p>
         </div>
       </footer>
     </div>

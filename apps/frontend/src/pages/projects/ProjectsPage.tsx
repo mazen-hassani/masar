@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 import {
   Button,
   Card,
@@ -19,6 +20,7 @@ import { Project, ProjectFormData } from "../../types";
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,12 +64,12 @@ export default function ProjectsPage() {
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    if (window.confirm("Are you sure you want to delete this project?")) {
+    if (window.confirm(t('are_you_sure'))) {
       try {
         await projectService.deleteProject(projectId);
         setProjects(projects.filter((p) => p.id !== projectId));
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to delete project";
+        const message = err instanceof Error ? err.message : t('failed');
         setError(message);
       }
     }
@@ -82,7 +84,7 @@ export default function ProjectsPage() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading projects...</p>
+          <p className="text-gray-600">{t('loading')}</p>
         </div>
       </div>
     );
@@ -93,11 +95,11 @@ export default function ProjectsPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
-          <p className="text-gray-600 mt-2">Manage and track your projects</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('projects')}</h1>
+          <p className="text-gray-600 mt-2">{t('manage_projects')}</p>
         </div>
         <Button onClick={() => setShowCreateModal(true)} variant="primary" size="lg">
-          + New Project
+          + {t('new_project')}
         </Button>
       </div>
 
@@ -115,19 +117,19 @@ export default function ProjectsPage() {
       {projects.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard
-            label="Total Projects"
+            label={t('total_projects')}
             value={projects.length}
             icon="📊"
             color="blue"
           />
           <StatCard
-            label="Active"
+            label={t('active_projects')}
             value={activeProjects}
             icon="⚡"
             color="green"
           />
           <StatCard
-            label="Completed"
+            label={t('completed_projects')}
             value={completedProjects}
             icon="✓"
             color="purple"
@@ -139,13 +141,13 @@ export default function ProjectsPage() {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Create New Project"
+        title={t('create_project')}
         size="md"
       >
         <ProjectForm
           onSubmit={handleCreateProject}
           isLoading={isSubmitting}
-          submitLabel="Create Project"
+          submitLabel={t('create_project')}
         />
       </Modal>
 
@@ -154,12 +156,12 @@ export default function ProjectsPage() {
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-6xl mb-4">📁</p>
-            <p className="text-gray-600 mb-4 text-lg font-medium">No projects yet</p>
+            <p className="text-gray-600 mb-4 text-lg font-medium">{t('no_projects')}</p>
             <p className="text-gray-500 mb-6">
-              Create your first project to get started with managing your tasks
+              {t('create_first_project')}
             </p>
             <Button onClick={() => setShowCreateModal(true)} variant="primary">
-              Create Your First Project
+              {t('create_first_project')}
             </Button>
           </CardContent>
         </Card>
@@ -187,7 +189,7 @@ export default function ProjectsPage() {
                     <StatusBadge status={project.status || "NOT_STARTED"} size="sm" />
                   </div>
                   <p className="text-gray-600 text-sm line-clamp-2">
-                    {project.description || "No description"}
+                    {project.description || t('no_description')}
                   </p>
                 </div>
 
@@ -196,7 +198,7 @@ export default function ProjectsPage() {
                   {/* Progress Section */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-gray-700">Progress</span>
+                      <span className="text-xs font-medium text-gray-700">{t('progress')}</span>
                       <span className="text-sm font-semibold text-gray-900">
                         {progress}%
                       </span>
@@ -208,7 +210,7 @@ export default function ProjectsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     {project.startDate && (
                       <div>
-                        <p className="text-xs text-gray-500 mb-1">Start</p>
+                        <p className="text-xs text-gray-500 mb-1">{t('start_date')}</p>
                         <p className="text-sm font-medium text-gray-900">
                           {new Date(project.startDate).toLocaleDateString("en-US", {
                             month: "short",
@@ -219,7 +221,7 @@ export default function ProjectsPage() {
                     )}
                     {project.endDate && (
                       <div>
-                        <p className="text-xs text-gray-500 mb-1">End</p>
+                        <p className="text-xs text-gray-500 mb-1">{t('end_date')}</p>
                         <p className="text-sm font-medium text-gray-900">
                           {new Date(project.endDate).toLocaleDateString("en-US", {
                             month: "short",
@@ -235,10 +237,10 @@ export default function ProjectsPage() {
                     <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
                       <p className="text-xs text-blue-600">
                         {daysUntilEnd > 0
-                          ? `${daysUntilEnd} days remaining`
+                          ? `${daysUntilEnd} ${t('days_remaining')}`
                           : daysUntilEnd === 0
-                          ? "Due today"
-                          : `${Math.abs(daysUntilEnd)} days overdue`}
+                          ? t('due_today')
+                          : `${Math.abs(daysUntilEnd)} ${t('days_overdue')}`}
                       </p>
                     </div>
                   )}
@@ -252,14 +254,14 @@ export default function ProjectsPage() {
                     size="sm"
                     className="flex-1"
                   >
-                    View
+                    {t('view')}
                   </Button>
                   <Button
                     onClick={() => handleDeleteProject(project.id)}
                     variant="danger"
                     size="sm"
                   >
-                    Delete
+                    {t('delete')}
                   </Button>
                 </div>
               </div>

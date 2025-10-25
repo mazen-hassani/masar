@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 import {
   Button,
   Card,
@@ -21,6 +22,7 @@ import { Project, Activity, Task, ActivityFormData } from "../../types";
 export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [project, setProject] = useState<Project | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activityTasks, setActivityTasks] = useState<Record<string, Task[]>>({});
@@ -119,7 +121,7 @@ export default function ProjectDetailPage() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading project...</p>
+          <p className="text-gray-600">{t('loading')}</p>
         </div>
       </div>
     );
@@ -129,16 +131,16 @@ export default function ProjectDetailPage() {
     return (
       <Alert
         variant="error"
-        title="Project Not Found"
+        title={t('error')}
         message="The project you're looking for doesn't exist or you don't have access to it."
       />
     );
   }
 
   const projectTabs = [
-    { label: "Overview", path: `/projects/${projectId}`, icon: "📋" },
-    { label: "Gantt", path: `/projects/${projectId}/gantt`, icon: "📊" },
-    { label: "Kanban", path: `/projects/${projectId}/kanban`, icon: "📌" },
+    { label: t('overview'), path: `/projects/${projectId}`, icon: "📋" },
+    { label: t('gantt_chart'), path: `/projects/${projectId}/gantt`, icon: "📊" },
+    { label: t('kanban_board'), path: `/projects/${projectId}/kanban`, icon: "📌" },
   ];
 
   return (
@@ -151,7 +153,7 @@ export default function ProjectDetailPage() {
           size="sm"
           className="mb-4"
         >
-          ← Back to Projects
+          ← {t('back_to_project')}
         </Button>
       </div>
 
@@ -176,19 +178,19 @@ export default function ProjectDetailPage() {
       {activities.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <StatCard
-            label="Activities"
+            label={t('activities')}
             value={activities.length}
             icon="📝"
             color="blue"
           />
           <StatCard
-            label="Total Tasks"
+            label={t('total_tasks')}
             value={Object.values(activityTasks).flat().length}
             icon="✓"
             color="green"
           />
           <StatCard
-            label="Completed"
+            label={t('completed')}
             value={Object.values(activityTasks)
               .flat()
               .filter((t) => t.status === "COMPLETED" || t.status === "VERIFIED").length}
@@ -196,7 +198,7 @@ export default function ProjectDetailPage() {
             color="purple"
           />
           <StatCard
-            label="In Progress"
+            label={t('in_progress')}
             value={Object.values(activityTasks)
               .flat()
               .filter((t) => t.status === "IN_PROGRESS").length}
@@ -210,13 +212,13 @@ export default function ProjectDetailPage() {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Create New Activity"
+        title={t('create_activity')}
         size="md"
       >
         <ActivityForm
           onSubmit={handleCreateActivity}
           isLoading={isSubmitting}
-          submitLabel="Create Activity"
+          submitLabel={t('create_activity')}
         />
       </Modal>
 
@@ -227,33 +229,33 @@ export default function ProjectDetailPage() {
           className="p-4 bg-white border-2 border-blue-500 rounded-lg hover:bg-blue-50 transition-colors text-left"
         >
           <p className="text-2xl mb-2">📋</p>
-          <p className="font-semibold text-gray-900">Overview</p>
-          <p className="text-sm text-gray-600 mt-1">View activities and tasks</p>
+          <p className="font-semibold text-gray-900">{t('overview')}</p>
+          <p className="text-sm text-gray-600 mt-1">{t('view_activities')}</p>
         </button>
         <button
           onClick={() => navigate(`/projects/${projectId}/gantt`)}
           className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
         >
           <p className="text-2xl mb-2">📊</p>
-          <p className="font-semibold text-gray-900">Gantt Chart</p>
-          <p className="text-sm text-gray-600 mt-1">View project timeline</p>
+          <p className="font-semibold text-gray-900">{t('gantt_chart')}</p>
+          <p className="text-sm text-gray-600 mt-1">{t('view_timeline')}</p>
         </button>
         <button
           onClick={() => navigate(`/projects/${projectId}/kanban`)}
           className="p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
         >
           <p className="text-2xl mb-2">📌</p>
-          <p className="font-semibold text-gray-900">Kanban Board</p>
-          <p className="text-sm text-gray-600 mt-1">Manage tasks by status</p>
+          <p className="font-semibold text-gray-900">{t('kanban_board')}</p>
+          <p className="text-sm text-gray-600 mt-1">{t('manage_tasks')}</p>
         </button>
       </div>
 
       {/* Activities List */}
       <div>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Activities</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{t('activities')}</h2>
           <Button onClick={() => setShowCreateModal(true)} variant="primary">
-            + New Activity
+            + {t('new_activity')}
           </Button>
         </div>
 
@@ -268,7 +270,7 @@ export default function ProjectDetailPage() {
                 Create your first activity to organize your project work
               </p>
               <Button onClick={() => setShowCreateModal(true)} variant="primary">
-                Create Activity
+                {t('create_activity')}
               </Button>
             </CardContent>
           </Card>

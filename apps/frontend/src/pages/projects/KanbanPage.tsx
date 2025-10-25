@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 import { Card, CardHeader, CardContent, Alert, Button } from "../../components/common";
 import {
   KanbanBoard,
@@ -11,12 +12,17 @@ import {
 import * as projectService from "../../services/projectService";
 import { Status } from "../../types";
 
+interface KanbanCardWithActivity extends KanbanCard {
+  activityId: string;
+}
+
 export default function KanbanPage() {
   const { projectId } = useParams<{ projectId: string }>();
-  const [tasks, setTasks] = useState<KanbanCard[]>([]);
+  const { t } = useLanguage();
+  const [tasks, setTasks] = useState<KanbanCardWithActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCard, setSelectedCard] = useState<KanbanCard | null>(null);
+  const [selectedCard, setSelectedCard] = useState<KanbanCardWithActivity | null>(null);
 
   useEffect(() => {
     if (projectId) {
@@ -32,7 +38,7 @@ export default function KanbanPage() {
       const activities = await projectService.getProjectActivities(projectId);
 
       // Collect all tasks from all activities
-      const allTasks: KanbanCard[] = [];
+      const allTasks: KanbanCardWithActivity[] = [];
       for (const activity of activities) {
         const activityTasks = await projectService.getActivityTasks(
           projectId,
@@ -54,6 +60,7 @@ export default function KanbanPage() {
           assignee: task.assignee?.firstName
             ? `${task.assignee.firstName} ${task.assignee.lastName}`
             : undefined,
+          activityId: activity.id,
         }));
         allTasks.push(...kanbanCards);
       }
@@ -70,18 +77,26 @@ export default function KanbanPage() {
   const handleCardMove = async (cardId: string, newStatus: Status) => {
     if (!projectId) return;
 
+    // Find the task and its activity
+    const taskToMove = tasks.find((t) => t.id === cardId);
+    if (!taskToMove) return;
+
     try {
+      // Update local state optimistically
       const updatedTasks = tasks.map((task) =>
         task.id === cardId ? { ...task, status: newStatus } : task
       );
       setTasks(updatedTasks);
 
-      // TODO: Call API to update task status
-      // await projectService.updateTask(projectId, activity_id, cardId, { status: newStatus });
+      // Call API to update task status
+      await projectService.updateTask(projectId, taskToMove.activityId, cardId, {
+        status: newStatus,
+      });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to update task";
+      const message = err instanceof Error ? err.message : t('failed');
       setError(message);
-      loadProjectTasks(); // Reload on error
+      // Reload on error to revert optimistic update
+      loadProjectTasks();
     }
   };
 
@@ -94,14 +109,14 @@ export default function KanbanPage() {
         size="sm"
         className="mb-2"
       >
-        ← Back to Project
+        ← {t('back')}
       </Button>
 
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">📌 Task Board</h1>
+        <h1 className="text-3xl font-bold text-gray-900">📌 {t('task_board')}</h1>
         <p className="text-gray-600 mt-2">
-          Organize and manage tasks by status. Drag and drop to update task status or click a card for details.
+          {t('board_description')}
         </p>
       </div>
 
@@ -120,7 +135,7 @@ export default function KanbanPage() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading tasks...</p>
+            <p className="text-gray-600">{t('loading')}</p>
           </div>
         </div>
       ) : (
@@ -130,13 +145,13 @@ export default function KanbanPage() {
             <CardContent className="pt-6 overflow-x-auto">
               {tasks.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
-                  <p>No tasks found. Create activities and tasks to see them here.</p>
+                  <p>{t('no_tasks')}</p>
                 </div>
               ) : (
                 <KanbanBoard
                   cards={tasks}
                   onCardMove={handleCardMove}
-                  onCardClick={setSelectedCard}
+                  onCardClick={(card) => setSelectedCard(card as KanbanCardWithActivity)}
                   statuses={[
                     Status.NOT_STARTED,
                     Status.IN_PROGRESS,
@@ -167,7 +182,7 @@ export default function KanbanPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-gray-600 text-sm mb-1">Status</p>
+                    <p className="text-gray-600 text-sm mb-1">{t('status')}</p>
                     <p className="text-gray-900 font-medium">
                       {selectedCard.status.replace(/_/g, " ")}
                     </p>
@@ -192,7 +207,7 @@ export default function KanbanPage() {
 
                   {selectedCard.dueDate && (
                     <div>
-                      <p className="text-gray-600 text-sm mb-1">Due Date</p>
+                      <p className="text-gray-600 text-sm mb-1">{t('end_date')}</p>
                       <p className="text-gray-900 font-medium">
                         {new Date(selectedCard.dueDate).toLocaleDateString()}
                       </p>
@@ -201,7 +216,7 @@ export default function KanbanPage() {
 
                   {selectedCard.assignee && (
                     <div>
-                      <p className="text-gray-600 text-sm mb-1">Assigned To</p>
+                      <p className="text-gray-600 text-sm mb-1">{t('assign_to')}</p>
                       <p className="text-gray-900 font-medium">
                         {selectedCard.assignee}
                       </p>

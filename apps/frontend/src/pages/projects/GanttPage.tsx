@@ -3,12 +3,14 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useLanguage } from "../../context/LanguageContext";
 import { Card, CardHeader, CardContent, Alert, Button } from "../../components/common";
 import { GanttChart, GanttTask } from "../../components/gantt/GanttChart";
 import * as projectService from "../../services/projectService";
 
 export default function GanttPage() {
   const { projectId } = useParams<{ projectId: string }>();
+  const { t } = useLanguage();
   const [tasks, setTasks] = useState<GanttTask[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export default function GanttPage() {
 
       setTasks(ganttTasks);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to load schedule";
+      const message = err instanceof Error ? err.message : t('failed');
       setError(message);
     } finally {
       setIsLoading(false);
@@ -58,14 +60,14 @@ export default function GanttPage() {
         size="sm"
         className="mb-2"
       >
-        ← Back to Project
+        ← {t('back')}
       </Button>
 
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">📊 Project Timeline</h1>
+        <h1 className="text-3xl font-bold text-gray-900">📊 {t('project_timeline')}</h1>
         <p className="text-gray-600 mt-2">
-          Visual representation of project schedule with task dependencies and critical path
+          {t('timeline_description')}
         </p>
       </div>
 
@@ -84,7 +86,7 @@ export default function GanttPage() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading project schedule...</p>
+            <p className="text-gray-600">{t('loading')}</p>
           </div>
         </div>
       ) : (
@@ -94,7 +96,7 @@ export default function GanttPage() {
             <CardContent className="pt-6">
               {tasks.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
-                  <p>No tasks scheduled yet. Create activities and tasks to see the Gantt chart.</p>
+                  <p>{t('no_tasks')}</p>
                 </div>
               ) : (
                 <GanttChart
@@ -116,30 +118,30 @@ export default function GanttPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-gray-600 text-sm mb-1">Start Date</p>
+                    <p className="text-gray-600 text-sm mb-1">{t('start_date')}</p>
                     <p className="text-gray-900 font-medium">
                       {selectedTask.startDate.toLocaleDateString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600 text-sm mb-1">End Date</p>
+                    <p className="text-gray-600 text-sm mb-1">{t('end_date')}</p>
                     <p className="text-gray-900 font-medium">
                       {selectedTask.endDate.toLocaleDateString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600 text-sm mb-1">Duration</p>
+                    <p className="text-gray-600 text-sm mb-1">{t('duration')}</p>
                     <p className="text-gray-900 font-medium">
                       {Math.ceil(
                         (selectedTask.endDate.getTime() -
                           selectedTask.startDate.getTime()) /
                           (1000 * 60 * 60 * 24)
                       )}{" "}
-                      days
+                      {t('days_until_due')}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600 text-sm mb-1">Progress</p>
+                    <p className="text-gray-600 text-sm mb-1">{t('progress')}</p>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-blue-600 h-2 rounded-full"
@@ -167,7 +169,7 @@ export default function GanttPage() {
                           const depTask = tasks.find((t) => t.id === depId);
                           return (
                             <div key={depId} className="text-sm text-gray-900">
-                              depends on: <strong>{depTask?.name || depId}</strong>
+                              {t('tasks')}: <strong>{depTask?.name || depId}</strong>
                             </div>
                           );
                         })}

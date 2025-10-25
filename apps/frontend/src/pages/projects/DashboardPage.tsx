@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { Card, CardHeader, CardContent, Alert } from "../../components/common";
 import {
   ProgressChart,
@@ -32,6 +33,7 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,12 +78,12 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg shadow p-8">
+      <div className="bg-gradient-to-r from-blue-600 to-teal-600 text-white rounded-lg shadow p-8">
         <h1 className="text-3xl font-bold mb-2">
-          Welcome, {user?.firstName || "User"}!
+          {t('welcome')} {user?.firstName || "User"}!
         </h1>
         <p className="text-blue-100">
-          Here's an overview of your projects, tasks, and performance metrics
+          {t('your_dashboard')}
         </p>
       </div>
 
@@ -95,7 +97,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading dashboard...</p>
+            <p className="text-gray-600">{t('loading')}</p>
           </div>
         </div>
       ) : (
@@ -103,23 +105,23 @@ export default function DashboardPage() {
           {/* Project Metrics */}
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Project Metrics
+              {t('quick_stats')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <StatCard
-                label="Total Projects"
+                label={t('total_projects')}
                 value={dashboardData?.projectMetrics.totalProjects || 0}
                 icon="📊"
                 color="blue"
               />
               <StatCard
-                label="Active Projects"
+                label={t('active_projects')}
                 value={dashboardData?.projectMetrics.activeProjects || 0}
                 icon="🚀"
                 color="green"
               />
               <StatCard
-                label="Completed Projects"
+                label={t('completed_projects')}
                 value={dashboardData?.projectMetrics.completedProjects || 0}
                 icon="✅"
                 color="green"
@@ -148,35 +150,35 @@ export default function DashboardPage() {
           {/* Task Metrics */}
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Task Metrics
+              {t('tasks')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <StatCard
-                label="Total Tasks"
+                label={t('total_tasks')}
                 value={dashboardData?.taskMetrics.totalTasks || 0}
                 icon="📋"
                 color="blue"
               />
               <StatCard
-                label="Completed"
+                label={t('completed')}
                 value={dashboardData?.taskMetrics.completedTasks || 0}
                 icon="✓"
                 color="green"
               />
               <StatCard
-                label="In Progress"
+                label={t('in_progress')}
                 value={dashboardData?.taskMetrics.inProgressTasks || 0}
                 icon="⏳"
                 color="blue"
               />
               <StatCard
-                label="Overdue"
+                label={t('overdue_tasks')}
                 value={dashboardData?.taskMetrics.overdueTasks || 0}
                 icon="🔔"
                 color="red"
               />
               <StatCard
-                label="Completion Rate"
+                label={t('completion_rate')}
                 value={`${Math.round(dashboardData?.taskMetrics.completionRate || 0)}%`}
                 icon="📈"
                 color="green"
@@ -190,20 +192,20 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="pt-6">
                 <PieChart
-                  title="Task Distribution"
+                  title={t('task_board')}
                   data={[
                     {
-                      label: "Completed",
+                      label: t('completed'),
                       value: dashboardData?.taskMetrics.completedTasks || 0,
                       color: "#10b981",
                     },
                     {
-                      label: "In Progress",
+                      label: t('in_progress'),
                       value: dashboardData?.taskMetrics.inProgressTasks || 0,
                       color: "#3b82f6",
                     },
                     {
-                      label: "Overdue",
+                      label: t('overdue_tasks'),
                       value: dashboardData?.taskMetrics.overdueTasks || 0,
                       color: "#ef4444",
                     },
@@ -245,14 +247,14 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <h2 className="text-xl font-semibold text-gray-900">
-                Overall Completion
+                {t('completion_rate')}
               </h2>
             </CardHeader>
             <CardContent>
               <div className="flex justify-center py-8">
                 <ProgressChart
                   percentage={dashboardData?.taskMetrics.completionRate || 0}
-                  label="Task Completion Rate"
+                  label={t('completion_rate')}
                   size="lg"
                 />
               </div>
@@ -263,13 +265,13 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <h2 className="text-xl font-semibold text-gray-900">
-                Profile Information
+                {t('profile')}
               </h2>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-gray-600 text-sm">Name</p>
+                  <p className="text-gray-600 text-sm">{t('profile')}</p>
                   <p className="text-gray-900 font-medium">
                     {user?.firstName && user?.lastName
                       ? `${user.firstName} ${user.lastName}`
@@ -281,7 +283,7 @@ export default function DashboardPage() {
                   <p className="text-gray-900 font-medium">{user?.email || "N/A"}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600 text-sm">Role</p>
+                  <p className="text-gray-600 text-sm">{t('settings')}</p>
                   <p className="text-gray-900 font-medium">{user?.role || "N/A"}</p>
                 </div>
                 <div>
